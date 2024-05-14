@@ -20,20 +20,36 @@ lazy val assemblySettings = Seq(
   }
 )
 
+lazy val commonSettings = Seq(
+  resolvers ++= Seq(
+    "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+    Resolver.sonatypeRepo("releases"),
+    Resolver.sonatypeRepo("snapshots")
+  )
+)
+
+lazy val settings =
+  commonSettings 
+
 lazy val root = project 
   .in(file("."))
+  .settings(
+    settings
+  )
   .disablePlugins(AssemblyPlugin)
   .aggregate(common, emailer, googleCalendarImporter)
 
 lazy val common = project
   .settings(
-    name := "common"
+    name := "common",
+    settings
   )
   .disablePlugins(AssemblyPlugin)
 
 lazy val emailer = project
   .settings(
     name := "emailer",
+    settings,
     assemblySettings,
     libraryDependencies ++= Seq(
       dependencies.awsLambda
@@ -44,6 +60,13 @@ lazy val emailer = project
   )
 
 lazy val googleCalendarImporter = project
+  .settings(
+    name := "googleCalendarImporter",
+    settings
+  )
+  .dependsOn(
+    common
+  )
 
 lazy val dependencies =
   new {
