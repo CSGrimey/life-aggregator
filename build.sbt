@@ -1,5 +1,5 @@
 name := "life-aggregator"
-maintainer := "charlesgrimes90@protonmail.com"
+//maintainer := "charlesgrimes90@protonmail.com"
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -7,9 +7,6 @@ ThisBuild / organization := "grimes.charles"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.4.1"
 ThisBuild / scalacOptions := Seq("-unchecked", "-feature", "-deprecation", "-encoding", "utf8")
-
-//enablePlugins(JavaAppPackaging)
-//enablePlugins(UniversalPlugin)
 
 lazy val assemblySettings = Seq(
   assemblyJarName in assembly := s"${name.value}.jar",
@@ -27,10 +24,13 @@ lazy val commonSettings = Seq(
 
 lazy val root = project
   .in(file("."))
-  .settings(commonSettings)
+  .settings(
+    commonSettings
+  )
   .disablePlugins(AssemblyPlugin)
   .aggregate(common, emailer, googleCalendarImporter)
-  .enablePlugins(SbtNativePackager)
+  //.enablePlugins(SbtNativePackager)
+  //.enablePlugins(AwsLambdaPlugin)
 
 lazy val common = project
   .in(file("common"))
@@ -48,6 +48,18 @@ lazy val emailer = project
     assembly / mainClass := Some("grimes.charles.Main"),
     assembly / test := (Test / test).value,
     assemblySettings,
+    //compile / mainClass := Some("grimes.charles.Main"),
+    //compile / packageDoc / mappings := Seq(),
+    //compile / packageDoc / topLevelDirectory := None,
+//    s3Bucket := Some("charles-grimes-manual-test"),
+//    s3KeyPrefix := "deployment",
+//    region := Some("eu-west-2"),
+//    roleArn := Some("arn:aws:iam::471112823184:role/lambda_execution_role"),
+//    deployMethod := Some("DIRECT"),
+//    lambdaRuntime := "java17",
+//    lambdaHandlers := Seq(
+//      "emailer"                 -> "grimes.charles.Main"
+//    ),
     libraryDependencies ++= Seq(
       dependencies.awsLambda,
       dependencies.log4j,
@@ -55,6 +67,8 @@ lazy val emailer = project
       dependencies.logback
     )
   )
+  //.enablePlugins(JavaAppPackaging)
+  //.enablePlugins(UniversalPlugin)
   .dependsOn(
     common
   )
