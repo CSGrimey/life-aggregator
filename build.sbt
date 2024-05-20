@@ -19,7 +19,13 @@ lazy val assemblySettings = Seq(
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository"
-  ) ++ Resolver.sonatypeOssRepos("snapshots") ++ Resolver.sonatypeOssRepos("releases")
+  ) ++ Resolver.sonatypeOssRepos("snapshots") ++ Resolver.sonatypeOssRepos("releases"),
+  libraryDependencies ++= Seq(
+    dependencies.awsLambda,
+    dependencies.log4j,
+    dependencies.log4jToSlf4j,
+    dependencies.logback
+  )
 )
 
 lazy val root = project
@@ -28,7 +34,7 @@ lazy val root = project
     commonSettings
   )
   .disablePlugins(AssemblyPlugin)
-  .aggregate(common, emailer, googleCalendarImporter)
+  .aggregate(common, emailBuilder, googleCalendarImporter)
   //.enablePlugins(SbtNativePackager)
   //.enablePlugins(AwsLambdaPlugin)
 
@@ -40,14 +46,14 @@ lazy val common = project
   )
   .disablePlugins(AssemblyPlugin)
 
-lazy val emailer = project
-  .in(file("emailer"))
+lazy val emailBuilder = project
+  .in(file("emailBuilder"))
   .settings(
-    name := "emailer",
+    name := "emailBuilder",
     commonSettings,
     assembly / mainClass := Some("grimes.charles.Main"),
     assembly / test := (Test / test).value,
-    assemblySettings,
+    assemblySettings
     //compile / mainClass := Some("grimes.charles.Main"),
     //compile / packageDoc / mappings := Seq(),
     //compile / packageDoc / topLevelDirectory := None,
@@ -58,14 +64,8 @@ lazy val emailer = project
 //    deployMethod := Some("DIRECT"),
 //    lambdaRuntime := "java17",
 //    lambdaHandlers := Seq(
-//      "emailer"                 -> "grimes.charles.Main"
-//    ),
-    libraryDependencies ++= Seq(
-      dependencies.awsLambda,
-      dependencies.log4j,
-      dependencies.log4jToSlf4j,
-      dependencies.logback
-    )
+//      "emailBuilder"                 -> "grimes.charles.Main"
+//    )
   )
   //.enablePlugins(JavaAppPackaging)
   //.enablePlugins(UniversalPlugin)
@@ -77,7 +77,10 @@ lazy val googleCalendarImporter = project
   .in(file("googleCalendarImporter"))
   .settings(
     name := "googleCalendarImporter",
-    commonSettings
+    commonSettings,
+    assembly / mainClass := Some("grimes.charles.Main"),
+    assembly / test := (Test / test).value,
+    assemblySettings
   )
   .dependsOn(
     common

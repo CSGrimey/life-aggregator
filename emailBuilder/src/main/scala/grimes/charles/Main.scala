@@ -9,8 +9,8 @@ class Main extends RequestHandler[String, Unit] {
 
   def handleRequest(input: String, context: Context): Unit = {
     logger.info(s"input received = $input")
+    logger.info(s"name = ${context.getFunctionName}")
     logger.info(s"aws request id = ${context.getAwsRequestId}")
     logger.info(s"version = ${context.getFunctionVersion}")
-    logger.info(s"name = ${context.getFunctionName}")
   }
 }
