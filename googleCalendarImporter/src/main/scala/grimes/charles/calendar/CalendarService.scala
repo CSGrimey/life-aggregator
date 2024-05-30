@@ -1,6 +1,7 @@
 package grimes.charles.calendar
 
-import cats.effect.{Clock, IO}
+import cats.effect.{Clock, IO, Sync}
+import cats.syntax.all.*
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.client.util.DateTime
@@ -17,8 +18,8 @@ import java.time.temporal.ChronoUnit.*
 import java.util.Date
 
 object CalendarService {
-  private def buildCalendarService(credentials: GoogleCredentials, projectName: String): IO[Calendar] =
-    IO.blocking(GoogleNetHttpTransport.newTrustedTransport()).map { httpTransport =>
+  private def buildCalendarService[F[_]: Sync](credentials: GoogleCredentials, projectName: String): F[Calendar] =
+    Sync[F].blocking(GoogleNetHttpTransport.newTrustedTransport()).map { httpTransport =>
       Calendar
         .Builder(
           httpTransport,
@@ -29,17 +30,17 @@ object CalendarService {
         .build()
     }
 
-  def retrieveEvents(credentials: GoogleCredentials, projectName: String, ownerEmail: String)
-                    (using clock: Clock[IO], logger: Logger): IO[Events] =
-    for {
+  def retrieveEvents[F[_]: Sync](credentials: GoogleCredentials, projectName: String, ownerEmail: String)
+                                (using clock: Clock[F], logger: Logger): F[Events] = {
+    val calendarEvents = for {
+      _ <- Sync[F].delay(logger.info("Building google calendar service using access token"))
       calendarService <- buildCalendarService(credentials, projectName)
 
       now <- clock.realTimeInstant
       timeMin = Date.from(now)
       timeMax = Date.from(now.plus(7, DAYS))  // Todo: Make this configurable.
       
-      _ <- IO(logger.info(s"Retrieving events from $timeMin to $timeMax"))
-      
+      _ <- Sync[F].delay(logger.info(s"Retrieving events from $timeMin to $timeMax"))
       eventsRequest = calendarService
         .events()
         .list(ownerEmail)
@@ -49,6 +50,11 @@ object CalendarService {
         .setTimeMax(DateTime(timeMax)) 
         .setTimeZone("Europe/London")
         .setMaxResults(10)
-      events <- IO.blocking(eventsRequest.execute())
+      events <- Sync[F].blocking(eventsRequest.execute())
     } yield events
+
+    calendarEvents.onError(error =>
+      Sync[F].delay(logger.error(s"Failed to retrieve calendar events. Error = $error"))
+    )
+  }
 }

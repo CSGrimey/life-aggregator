@@ -64,7 +64,8 @@ lazy val googleCalendarImporter = project
     assemblySettings,
     libraryDependencies ++= Seq(
       dependencies.googleAuth,
-      dependencies.googleApi
+      dependencies.googleApi,
+      dependencies.http4sEmberClient
     )
   )
   .dependsOn(common)
@@ -79,4 +80,5 @@ lazy val dependencies =
     val googleApi = "com.google.apis" % "google-api-services-calendar" % "v3-rev20240419-2.0.0"
     val catsEffect = "org.typelevel" %% "cats-effect" % "3.5.4"
     val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.4" % Test
+    val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % "0.23.27"
   }
