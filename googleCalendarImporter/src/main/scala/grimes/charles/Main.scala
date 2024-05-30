@@ -27,6 +27,7 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
       .use { client =>
         // Todo: Look into best way to handle errors
         for {
+          _ <- IO(logger.info("Reading env vars"))
           credentialsName <- IO(sys.env("CREDENTIALS_NAME"))
           awsSessionToken <- IO(sys.env("AWS_SESSION_TOKEN"))
           ownerEmail <- IO(sys.env("OWNER_EMAIL"))
@@ -36,7 +37,9 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
             credentialsName, awsSessionToken, client
           )
 
-          events <- CalendarService.retrieveEvents[IO](credentials, projectName, ownerEmail)
+          events <- CalendarService.retrieveEvents[IO](
+            credentials, projectName, ownerEmail
+          )
 
           // Todo: Send events data in format expected by email builder lambda
         } yield events.toPrettyString
