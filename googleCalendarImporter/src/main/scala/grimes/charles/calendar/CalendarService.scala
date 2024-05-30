@@ -1,6 +1,6 @@
 package grimes.charles.calendar
 
-import cats.effect.{Clock, IO, Sync}
+import cats.effect.{Clock, Sync}
 import cats.syntax.all.*
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -30,16 +30,13 @@ object CalendarService {
         .build()
     }
 
-  def retrieveEvents[F[_]: Sync](credentials: GoogleCredentials, projectName: String, ownerEmail: String)
-                                (using clock: Clock[F], logger: Logger): F[Events] = {
-    val calendarEvents = for {
-      _ <- Sync[F].delay(logger.info("Building google calendar service using access token"))
-      calendarService <- buildCalendarService(credentials, projectName)
-
+  private def retrieveEvents[F[_]: Sync](calendarService: Calendar, ownerEmail: String)
+                                        (using clock: Clock[F], logger: Logger): F[Events] =
+    for {
       now <- clock.realTimeInstant
       timeMin = Date.from(now)
-      timeMax = Date.from(now.plus(7, DAYS))  // Todo: Make this configurable.
-      
+      timeMax = Date.from(now.plus(7, DAYS)) // Todo: Make this configurable.
+
       _ <- Sync[F].delay(logger.info(s"Retrieving events from $timeMin to $timeMax"))
       eventsRequest = calendarService
         .events()
@@ -47,10 +44,19 @@ object CalendarService {
         .setSingleEvents(true)
         .setOrderBy("starttime")
         .setTimeMin(DateTime(timeMin))
-        .setTimeMax(DateTime(timeMax)) 
+        .setTimeMax(DateTime(timeMax))
         .setTimeZone("Europe/London")
         .setMaxResults(10)
       events <- Sync[F].blocking(eventsRequest.execute())
+    } yield events
+
+  def retrieveEvents[F[_]: Sync](credentials: GoogleCredentials, projectName: String, ownerEmail: String)
+                                (using clock: Clock[F], logger: Logger): F[Events] = {
+    val calendarEvents = for {
+      _ <- Sync[F].delay(logger.info("Building google calendar service using access token"))
+      calendarService <- buildCalendarService(credentials, projectName)
+
+      events <- retrieveEvents(calendarService, ownerEmail)
     } yield events
 
     calendarEvents.onError(error =>
