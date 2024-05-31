@@ -46,7 +46,7 @@ object CredentialsLoader {
   def load[F[_]: Async](serviceAccountCredsName: String, awsSessionToken: String, client: Client[F])
                        (using logger: Logger): F[GoogleCredentials] = {
     val googleCreds = for {
-      _ <- Async[F].delay(logger.info("Retrieve google service account credentials"))
+      _ <- Async[F].delay(logger.info("Retrieving google service account credentials"))
       serviceAccountCredsString <- getServiceAccountCreds(
         serviceAccountCredsName, awsSessionToken, client
       )
