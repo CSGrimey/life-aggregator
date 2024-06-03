@@ -33,7 +33,7 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
           ownerEmail <- IO(sys.env("OWNER_EMAIL"))
           projectName <- IO(sys.env("GOOGLE_PROJECT_NAME"))
 
-          credentials <- CredentialsLoader.load[IO](
+          credentials <- CredentialsLoader[IO].load(
             credentialsName, awsSessionToken, client
           )
 
