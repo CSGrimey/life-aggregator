@@ -17,9 +17,9 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoUnit.*
 import java.util.Date
 
-object CalendarService {
-  private def buildCalendarService[F[_]: Sync](credentials: GoogleCredentials, projectName: String): F[Calendar] =
-    Sync[F].blocking(GoogleNetHttpTransport.newTrustedTransport()).map { httpTransport =>
+class CalendarService[F[_]: Sync] {
+  private def buildCalendarService(credentials: GoogleCredentials, projectName: String): F[Calendar] =
+    Sync[F].delay(GoogleNetHttpTransport.newTrustedTransport()).map { httpTransport =>
       Calendar
         .Builder(
           httpTransport,
@@ -30,8 +30,8 @@ object CalendarService {
         .build()
     }
 
-  private def retrieveEvents[F[_]: Sync](calendarService: Calendar, ownerEmail: String)
-                                        (using clock: Clock[F], logger: Logger): F[Events] =
+  private def retrieveEvents(calendarService: Calendar, ownerEmail: String)
+                            (using clock: Clock[F], logger: Logger): F[Events] =
     for {
       now <- clock.realTimeInstant
       timeMin = Date.from(now)
@@ -47,11 +47,14 @@ object CalendarService {
         .setTimeMax(DateTime(timeMax))
         .setTimeZone("Europe/London")
         .setMaxResults(10)
-      events <- Sync[F].blocking(eventsRequest.execute())
+      events <- executeRequest(eventsRequest)
     } yield events
+    
+  protected def executeRequest(request: Calendar#Events#List): F[Events] =
+    Sync[F].blocking(request.execute())
 
-  def retrieveEvents[F[_]: Sync](credentials: GoogleCredentials, projectName: String, ownerEmail: String)
-                                (using clock: Clock[F], logger: Logger): F[Events] = {
+  def retrieveEvents(credentials: GoogleCredentials, projectName: String, ownerEmail: String)
+                    (using clock: Clock[F], logger: Logger): F[Events] = {
     val calendarEvents = for {
       _ <- Sync[F].delay(logger.info("Building google calendar service using access token"))
       calendarService <- buildCalendarService(credentials, projectName)

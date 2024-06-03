@@ -31,6 +31,7 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
   }
 
   private given logger: Logger = LogManager.getLogger(this.getClass)
+ 
   private val awsSessionToken = UUID.randomUUID().toString
   private val serviceAccountCredsName = "my-service-account"  // Todo: Assert this gets used.
   private val serviceAccountCreds = parse("""
@@ -50,7 +51,7 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
   """).getOrElse(Json.obj())
   private val expectedHeaders = Headers(
     Header.Raw(ci"X-Aws-Parameters-Secrets-Token", awsSessionToken),
-    Header.Raw(ci"Accept", "text/*") 
+    Header.Raw(ci"Accept", "text/*")
   )
   private val expectedSSMUrl = "http://localhost:2773/systemsmanager/parameters/get?name=my-service-account"
 

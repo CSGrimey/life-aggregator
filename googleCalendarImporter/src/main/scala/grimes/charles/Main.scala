@@ -27,6 +27,7 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
       .use { client =>
         // Todo: Look into best way to handle errors
         for {
+          // Todo: Use config loading library
           _ <- IO(logger.info("Reading env vars"))
           credentialsName <- IO(sys.env("CREDENTIALS_NAME"))
           awsSessionToken <- IO(sys.env("AWS_SESSION_TOKEN"))
@@ -37,7 +38,7 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
             credentialsName, awsSessionToken, client
           )
 
-          events <- CalendarService.retrieveEvents[IO](
+          events <- CalendarService[IO].retrieveEvents(
             credentials, projectName, ownerEmail
           )
 
