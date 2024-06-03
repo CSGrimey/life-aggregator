@@ -21,9 +21,8 @@ lazy val commonSettings = Seq(
   ) ++ Resolver.sonatypeOssRepos("snapshots") ++ Resolver.sonatypeOssRepos("releases"),
   libraryDependencies ++= Seq(
     dependencies.awsLambda,
-    dependencies.log4j,
-    dependencies.log4jToSlf4j,
     dependencies.logback,
+    dependencies.log4cats,
     dependencies.catsEffect,
     dependencies.weaver
   ),
@@ -76,9 +75,8 @@ lazy val googleCalendarImporter = project
 lazy val dependencies =
   new {
     val awsLambda        = "com.amazonaws" % "aws-lambda-java-core" % "1.2.3"
-    val log4j = "org.apache.logging.log4j" % "log4j-api" % "2.23.1"
-    val log4jToSlf4j = "org.apache.logging.log4j" % "log4j-to-slf4j" % "2.23.1"
     val logback = "ch.qos.logback" % "logback-classic" % "1.5.6"
+    val log4cats = "org.typelevel" %% "log4cats-slf4j" % "2.7.0"
     val googleAuth = "com.google.auth" % "google-auth-library-oauth2-http" % "1.23.0"
     val googleApi = "com.google.apis" % "google-api-services-calendar" % "v3-rev20240419-2.0.0"
     val catsEffect = "org.typelevel" %% "cats-effect" % "3.5.4"

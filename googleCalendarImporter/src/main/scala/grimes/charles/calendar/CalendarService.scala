@@ -10,7 +10,7 @@ import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.model.Events
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
-import org.apache.logging.log4j.Logger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -31,13 +31,13 @@ class CalendarService[F[_]: Sync] {
     }
 
   private def retrieveEvents(calendarService: Calendar, ownerEmail: String)
-                            (using clock: Clock[F], logger: Logger): F[Events] =
+                            (using clock: Clock[F], logger: SelfAwareStructuredLogger[F]): F[Events] =
     for {
       now <- clock.realTimeInstant
       timeMin = Date.from(now)
       timeMax = Date.from(now.plus(7, DAYS)) // Todo: Make this configurable.
 
-      _ <- Sync[F].delay(logger.info(s"Retrieving events from $timeMin to $timeMax"))
+      _ <- logger.info(s"Retrieving events from $timeMin to $timeMax")
       eventsRequest = calendarService
         .events()
         .list(ownerEmail)
@@ -54,16 +54,16 @@ class CalendarService[F[_]: Sync] {
     Sync[F].blocking(request.execute())
 
   def retrieveEvents(credentials: GoogleCredentials, projectName: String, ownerEmail: String)
-                    (using clock: Clock[F], logger: Logger): F[Events] = {
+                    (using clock: Clock[F], logger: SelfAwareStructuredLogger[F]): F[Events] = {
     val calendarEvents = for {
-      _ <- Sync[F].delay(logger.info("Building google calendar service using access token"))
+      _ <- logger.info("Building google calendar service using access token")
       calendarService <- buildCalendarService(credentials, projectName)
 
       events <- retrieveEvents(calendarService, ownerEmail)
     } yield events
 
     calendarEvents.onError(error =>
-      Sync[F].delay(logger.error(s"Failed to retrieve calendar events. Error = $error"))
+      logger.error(s"Failed to retrieve calendar events. Error = $error")
     )
   }
 }

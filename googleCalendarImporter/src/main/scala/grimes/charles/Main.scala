@@ -6,15 +6,15 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import grimes.charles.calendar.CalendarService
 import grimes.charles.credentials.CredentialsLoader
-import org.apache.logging.log4j.{LogManager, Logger}
 import org.http4s.ember.client.EmberClientBuilder
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.util
 import scala.jdk.CollectionConverters.*
 
 class Main extends RequestHandler[util.HashMap[String, String], String] {
-  // Todo: Look into a cats effect friendly logger
-  private given logger: Logger = LogManager.getLogger(this.getClass)
+  private given logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger
 
   def handleRequest(input: util.HashMap[String, String], context: Context): String =
     // Todo: See if there's a way to not need to call unsafeRunSync()
@@ -28,7 +28,7 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
         // Todo: Look into best way to handle errors
         for {
           // Todo: Use config loading library
-          _ <- IO(logger.info("Reading env vars"))
+          _ <- logger.info("Reading env vars")
           credentialsName <- IO(sys.env("CREDENTIALS_NAME"))
           awsSessionToken <- IO(sys.env("AWS_SESSION_TOKEN"))
           ownerEmail <- IO(sys.env("OWNER_EMAIL"))

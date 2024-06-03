@@ -6,7 +6,8 @@ import com.google.api.services.calendar.CalendarScopes.CALENDAR_EVENTS_READONLY
 import com.google.auth.oauth2.GoogleCredentials
 import io.circe.Json
 import io.circe.parser.*
-import org.apache.logging.log4j.{LogManager, Logger}
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.http4s.Status.Ok
 import org.http4s.client.Client
 import org.http4s.dsl.io.*
@@ -30,8 +31,8 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
     override def refreshIfExpired(): Unit = ()
   }
 
-  private given logger: Logger = LogManager.getLogger(this.getClass)
- 
+  private given logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger
+
   private val awsSessionToken = UUID.randomUUID().toString
   private val serviceAccountCredsName = "my-service-account"  // Todo: Assert this gets used.
   private val serviceAccountCreds = parse("""
