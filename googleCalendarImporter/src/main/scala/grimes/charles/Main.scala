@@ -7,16 +7,15 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import grimes.charles.calendar.CalendarService
 import grimes.charles.credentials.CredentialsLoader
 import org.http4s.ember.client.EmberClientBuilder
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
 import java.util
 import scala.jdk.CollectionConverters.*
 
 class Main extends RequestHandler[util.HashMap[String, String], String] {
-  private given logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger
+  private given logger: Logger[IO] = Slf4jLogger.getLogger
 
-  def handleRequest(input: util.HashMap[String, String], context: Context): String =
+  def handleRequest(input: util.HashMap[String, String], context: Context): String = 
     // Todo: See if there's a way to not need to call unsafeRunSync()
     run(input.asScala.toMap, context).unsafeRunSync()
 

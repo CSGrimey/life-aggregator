@@ -5,7 +5,7 @@ import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.model.Events
 import com.google.api.services.calendar.model.Event
 import com.google.auth.oauth2.GoogleCredentials
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.SimpleIOSuite
 
@@ -33,7 +33,7 @@ object CalendarServiceSpec extends SimpleIOSuite {
         .as(retrievedEvents)
   }
 
-  private given logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger
+  private given logger: Logger[IO] = Slf4jLogger.getLogger
 
   private val ownerEmail = "test@example.com"
   private val projectName = "life-aggregator-test"

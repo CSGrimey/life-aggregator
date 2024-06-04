@@ -4,12 +4,12 @@ import cats.effect.Async
 import cats.syntax.all.*
 import com.google.api.services.calendar.CalendarScopes.*
 import com.google.auth.oauth2.GoogleCredentials
-import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.http4s.Method.*
 import org.http4s.client.Client
 import org.http4s.implicits.uri
 import org.http4s.{Header, Headers, Method, Request, Uri}
 import org.typelevel.ci.CIStringSyntax
+import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.nio.charset.StandardCharsets.*
@@ -21,7 +21,7 @@ class CredentialsLoader[F[_] : Async] {
   private def getCreds(credsName: String, awsSessionToken: String, client: Client[F]): F[String] = {
     val request = Request[F](
       method = GET,
-      uri = credsUrl.withQueryParam("name", credsName),
+      uri = credsUrl.withQueryParam("name", credsName).withQueryParam("withDecryption", true),
       headers = Headers(
         Header.Raw(ci"X-Aws-Parameters-Secrets-Token", awsSessionToken)
       )
@@ -38,17 +38,19 @@ class CredentialsLoader[F[_] : Async] {
     for {
       googleCreds <- buildCredsLoader(
         credsInputStream, 
-        "https://www.googleapis.com/auth/cloud-platform.read-only", CALENDAR_EVENTS_READONLY
+        "https://www.googleapis.com/auth/cloud-platform.read-only", 
+        CALENDAR_EVENTS_READONLY
       )
       _ <- Async[F].blocking(googleCreds.refreshIfExpired())
     } yield googleCreds
 
   def load(credsName: String, awsSessionToken: String, client: Client[F])
-          (using logger: SelfAwareStructuredLogger[F]): F[GoogleCredentials] = {
+          (using logger: Logger[F]): F[GoogleCredentials] = {
     val googleCreds = for {
       _ <- logger.info("Retrieving google service account credentials")
       credsString <- getCreds(credsName, awsSessionToken, client)
-      credsInputStream = ByteArrayInputStream(credsString.getBytes(UTF_8.name))
+      _ <- logger.info(s"credsString = ${credsString.toString}") // Todo: REMOVE!
+      credsInputStream = ByteArrayInputStream(credsString.toString.getBytes(UTF_8.name))
 
       _ <- logger.info("Using google service account credentials to get access token")
       accessToken <- getAccessToken(credsInputStream)

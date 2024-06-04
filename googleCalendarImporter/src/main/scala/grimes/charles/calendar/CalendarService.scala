@@ -10,7 +10,7 @@ import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.model.Events
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.{ SelfAwareStructuredLogger => Logger }
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -31,7 +31,7 @@ class CalendarService[F[_]: Sync] {
     }
 
   private def retrieveEvents(calendarService: Calendar, ownerEmail: String)
-                            (using clock: Clock[F], logger: SelfAwareStructuredLogger[F]): F[Events] =
+                            (using clock: Clock[F], logger: Logger[F]): F[Events] =
     for {
       now <- clock.realTimeInstant
       timeMin = Date.from(now)
@@ -54,7 +54,7 @@ class CalendarService[F[_]: Sync] {
     Sync[F].blocking(request.execute())
 
   def retrieveEvents(credentials: GoogleCredentials, projectName: String, ownerEmail: String)
-                    (using clock: Clock[F], logger: SelfAwareStructuredLogger[F]): F[Events] = {
+                    (using clock: Clock[F], logger: Logger[F]): F[Events] = {
     val calendarEvents = for {
       _ <- logger.info("Building google calendar service using access token")
       calendarService <- buildCalendarService(credentials, projectName)

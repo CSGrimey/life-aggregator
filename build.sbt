@@ -66,8 +66,10 @@ lazy val googleCalendarImporter = project
       dependencies.googleApi,
       dependencies.http4sEmberClient,
       dependencies.http4sDsl,
+      dependencies.http4sCirce,
       dependencies.circeCore,
-      dependencies.circeParser
+      dependencies.circeParser,
+      dependencies.circeGeneric
     )
   )
   .dependsOn(common)
@@ -83,6 +85,8 @@ lazy val dependencies =
     val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.4" % Test
     val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % "0.23.27"
     val http4sDsl = "org.http4s" %% "http4s-dsl" % "0.23.27"
+    val http4sCirce = "org.http4s" %% "http4s-circe" % "0.23.27"
     val circeCore = "io.circe" %% "circe-core" % "0.15.0-M1"
+    val circeGeneric = "io.circe" %% "circe-generic" % "0.15.0-M1"
     val circeParser = "io.circe" %% "circe-parser" % "0.15.0-M1"
   }
