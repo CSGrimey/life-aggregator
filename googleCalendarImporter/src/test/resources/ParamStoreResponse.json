@@ -1,0 +1,11 @@
+{
+  "Parameter": {
+    "Name": "my-service-account",
+    "Type": "SecureString",
+    "Value": "{\"type\":\"service_account\",\"project_id\":\"424114\",\"private_key_id\":\"12345\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\nObviouslyFake\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"test@example.gserviceaccount.com\",\"client_id\":\"4321\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\":\"https://www.googleapis.com/robot/v1/metadata/x509/test%40example.gserviceaccount.com\",\"universe_domain\":\"googleapis.com\"}",
+    "Version": 2,
+    "LastModifiedDate": "2024-06-07T14:48:41.641000+00:00",
+    "ARN": "arn:aws:ssm:eu-west-1:471:parameter/my-service-account",
+    "DataType": "text"
+  }
+}

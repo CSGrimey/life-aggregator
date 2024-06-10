@@ -15,6 +15,7 @@ import weaver.SimpleIOSuite
 
 import java.io.InputStream
 import java.util.UUID
+import scala.io.Source
 
 object CredentialsLoaderSpec extends SimpleIOSuite {
   private val credentialsLoaderStub = new CredentialsLoader[IO] {
@@ -33,39 +34,10 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
 
   private val awsSessionToken = UUID.randomUUID().toString
   private val serviceAccountCredsName = "my-service-account"  // Todo: Assert this gets used.
-  private val serviceAccountCreds = """
-    {
-      "type": "service_account",
-      "project_id": "test",
-      "private_key_id": "1234",
-      "private_key": "MIIEvgIBADANB",
-      "client_email": "test@google.com",
-      "client_id": "12345",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://oauth2.googleapis.com/token",
-      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test@google.com",
-      "universe_domain": "googleapis.com"
-    }
-  """
-  private val ssmParameter =
-    s"""
-    {
-      "Parameter" : {
-        "ARN" : "arn:aws:ssm:eu-west-1:1234:parameter/credentials",
-        "DataType" : "text",
-        "LastModifiedDate" : "2024-03-22T12:29:58.791Z",
-        "Name" : "my-service-account",
-        "Selector" : null,
-        "SourceResult" : null,
-        "Type" : "SecureString",
-        "Value" : "{\"test\":\"test\"}",
-        "Version" : 1
-      },
-      "ResultMetadata" : {
-      }
-    }
-    """
+  private val serviceAccountCreds = " {\"type\": \"service_account\",\"project_id\": \"5678\",\"private_key_id\": \"1234\", \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvgWTCEJG1j\\n-----END PRIVATE KEY-----\\n\",\"client_email\": \"test@google.com\",\"client_id\": \"12345\",\"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\"token_uri\": \"https://oauth2.googleapis.com/token\", \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/test@google.com\",\"universe_domain\": \"googleapis.com\"}"
+  private val ssmParameterResponse = Resource.fromAutoCloseable(
+    IO.blocking(Source.fromURL(getClass.getResource("/ParamStoreResponse.json"), "utf-8"))
+  ).map(_.mkString)
 
   private val expectedHeaders = Headers(
     Header.Raw(ci"X-Aws-Parameters-Secrets-Token", awsSessionToken),
@@ -74,17 +46,20 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
   private val expectedSSMUrl = "http://localhost:2773/systemsmanager/parameters/get?name=my-service-account&withDecryption=true"
 
   test("Should load access token from service account credentials") {
-    val stubClient = Client.apply[IO] { request =>
-      if (request.headers == expectedHeaders &&
-        request.uri.toString == expectedSSMUrl)
-        Resource.eval(Ok(ssmParameter))
-      else Resource.eval(BadRequest())
-    }
+    // Todo: Makes this a singleton shared resource.
+    ssmParameterResponse.use { response =>
+      val stubClient = Client.apply[IO] { request =>
+        if (request.headers == expectedHeaders &&
+          request.uri.toString == expectedSSMUrl)
+          Resource.eval(Ok(response))
+        else Resource.eval(BadRequest())
+      }
 
-    for {
-      result <- credentialsLoaderStub.load(
-        serviceAccountCredsName, awsSessionToken, stubClient
-      ).attempt
-    } yield expect(result.isRight)
+      for {
+        result <- credentialsLoaderStub.load(
+          serviceAccountCredsName, awsSessionToken, stubClient
+        ).attempt
+      } yield expect(result.isRight)
+    }
   }
 }

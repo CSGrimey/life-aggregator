@@ -42,6 +42,7 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
           )
 
           // Todo: Send events data in format expected by email builder lambda
+          _ <- logger.info(s"events = $events")
         } yield events.toPrettyString
       }
 }
