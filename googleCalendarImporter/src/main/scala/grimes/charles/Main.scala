@@ -1,7 +1,8 @@
 package grimes.charles
 
 import cats.effect.IO
-import cats.effect.unsafe.implicits.global
+import cats.effect.kernel.Clock
+import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import grimes.charles.calendar.CalendarService
@@ -9,6 +10,7 @@ import grimes.charles.credentials.CredentialsLoader
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
 import java.util
 import scala.jdk.CollectionConverters.*
 
@@ -37,12 +39,13 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
             credentialsName, awsSessionToken, client
           )
 
+          now <- Clock[IO].realTimeInstant
           events <- CalendarService[IO].retrieveEvents(
-            credentials, projectName, ownerEmail
+            credentials, projectName, ownerEmail, now, 1
           )
 
           // Todo: Send events data in format expected by email builder lambda
           _ <- logger.info(s"events = $events")
-        } yield events.toPrettyString
+        } yield events.mkString
       }
 }

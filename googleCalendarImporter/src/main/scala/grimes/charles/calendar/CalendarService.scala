@@ -1,6 +1,6 @@
 package grimes.charles.calendar
 
-import cats.effect.{Clock, Sync}
+import cats.effect.Sync
 import cats.syntax.all.*
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -10,12 +10,13 @@ import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.model.Events
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
-import org.typelevel.log4cats.{ SelfAwareStructuredLogger => Logger }
+import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
-import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoUnit.*
+import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.Date
+import scala.jdk.CollectionConverters.*
 
 class CalendarService[F[_]: Sync] {
   private def buildCalendarService(credentials: GoogleCredentials, projectName: String): F[Calendar] =
@@ -32,12 +33,15 @@ class CalendarService[F[_]: Sync] {
           .build()
       }
 
-  private def retrieveEvents(calendarService: Calendar, ownerEmail: String)
-                            (using clock: Clock[F], logger: Logger[F]): F[Events] =
+  private def retrieveEvents(
+                              calendarService: Calendar,
+                              ownerEmail: String,
+                              now: Instant,
+                              daysWindow: Int
+                            )(using logger: Logger[F]): F[Events] =
     for {
-      now <- clock.realTimeInstant
-      timeMin = Date.from(now)
-      timeMax = Date.from(now.plus(7, DAYS)) // Todo: Make this configurable.
+      timeMin <- Sync[F].pure(Date.from(now))
+      timeMax = Date.from(now.plus(daysWindow, DAYS)) 
 
       _ <- logger.info(s"Retrieving events from $timeMin to $timeMax")
       eventsRequest = calendarService
@@ -50,18 +54,38 @@ class CalendarService[F[_]: Sync] {
         .setTimeZone("Europe/London")
       events <- executeRequest(eventsRequest)
     } yield events
+
+  private def transformEvents(events: Events): List[EventSummary] =
+    events
+      .getItems
+      .asScala
+      .map(event => {
+        val startDateTime = ZonedDateTime.ofInstant(
+          Instant.ofEpochMilli(
+            event.getStart.getDateTime.getValue
+          ), ZoneId.of("UTC")
+        )
+
+        EventSummary(event.getSummary, startDateTime)
+      }).toList
     
   protected def executeRequest(request: Calendar#Events#List): F[Events] =
     Sync[F].blocking(request.execute())
 
-  def retrieveEvents(credentials: GoogleCredentials, projectName: String, ownerEmail: String)
-                    (using clock: Clock[F], logger: Logger[F]): F[Events] = {
+  def retrieveEvents(
+                      credentials: GoogleCredentials,
+                      projectName: String,
+                      ownerEmail: String,
+                      now: Instant,
+                      daysWindow: Int
+                    )(using logger: Logger[F]): F[List[EventSummary]] = {
     val calendarEvents = for {
       _ <- logger.info("Building google calendar service using access token")
       calendarService <- buildCalendarService(credentials, projectName)
 
-      events <- retrieveEvents(calendarService, ownerEmail)
-    } yield events
+      events <- retrieveEvents(calendarService, ownerEmail, now, daysWindow)
+      summarisedEvents = transformEvents(events)
+    } yield summarisedEvents
 
     calendarEvents.onError(error =>
       logger.error(s"Failed to retrieve calendar events. Error = $error")
