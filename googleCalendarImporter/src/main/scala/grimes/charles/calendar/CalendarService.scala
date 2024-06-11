@@ -19,16 +19,18 @@ import java.util.Date
 
 class CalendarService[F[_]: Sync] {
   private def buildCalendarService(credentials: GoogleCredentials, projectName: String): F[Calendar] =
-    Sync[F].delay(GoogleNetHttpTransport.newTrustedTransport()).map { httpTransport =>
-      Calendar
-        .Builder(
-          httpTransport,
-          GsonFactory.getDefaultInstance,
-          HttpCredentialsAdapter(credentials)
-        )
-        .setApplicationName(projectName)
-        .build()
-    }
+    Sync[F]
+      .delay(GoogleNetHttpTransport.newTrustedTransport())
+      .map { httpTransport =>
+        Calendar
+          .Builder(
+            httpTransport,
+            GsonFactory.getDefaultInstance,
+            HttpCredentialsAdapter(credentials)
+          )
+          .setApplicationName(projectName)
+          .build()
+      }
 
   private def retrieveEvents(calendarService: Calendar, ownerEmail: String)
                             (using clock: Clock[F], logger: Logger[F]): F[Events] =
@@ -46,7 +48,6 @@ class CalendarService[F[_]: Sync] {
         .setTimeMin(DateTime(timeMin))
         .setTimeMax(DateTime(timeMax))
         .setTimeZone("Europe/London")
-        .setMaxResults(10)
       events <- executeRequest(eventsRequest)
     } yield events
     

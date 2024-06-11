@@ -1,0 +1,354 @@
+{
+  "accessRole": "reader",
+  "defaultReminders": [],
+  "description": "",
+  "etag": "\"p33oedp54k38oc0o\"",
+  "items": [
+    {
+      "created": "2024-06-07T12:45:58.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "date": "2024-06-12"
+      },
+      "etag": "\"3435528717704000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=Mm5hamppcnQzaDI2MGRvOXFsN241aThoYmggY2hhcmxlc2dyaW1lczkwQG0&ctz=Europe/London",
+      "iCalUID": "2najjirt3h260do9ql7n5i8hbh@google.com",
+      "id": "2najjirt3h260do9ql7n5i8hbh",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "reminders": {
+        "useDefault": false
+      },
+      "sequence": 0,
+      "start": {
+        "date": "2024-06-11"
+      },
+      "status": "confirmed",
+      "summary": "Meat delivery",
+      "transparency": "transparent",
+      "updated": "2024-06-07T12:45:58.852Z"
+    },
+    {
+      "created": "2024-06-10T07:53:01.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-11T22:30:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3436011963524000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=NnRqMzJkaG5jZGg2OGI5aGM1ajZhYjlrNzRwamNiYjJjb3FqMmJiMjYwcTM0ZDFwYzVoMzZlMW42OCBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "6tj32dhncdh68b9hc5j6ab9k74pjcbb2coqj2bb260q34d1pc5h36e1n68@google.com",
+      "id": "6tj32dhncdh68b9hc5j6ab9k74pjcbb2coqj2bb260q34d1pc5h36e1n68",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 0,
+      "start": {
+        "dateTime": "2024-06-11T19:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "Film night with Neil",
+      "updated": "2024-06-10T07:53:01.762Z"
+    },
+    {
+      "created": "2024-05-29T20:13:35.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-12T13:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3434027230640000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=Y29yMzZwaG1jNHBqYWJiNmNvb2oyYjlrY2NzajZiYjE3MHIzNmI5ZzZ0aG00ZDMxYzlqM2VlMWpjayBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "cor36phmc4pjabb6cooj2b9kccsj6bb170r36b9g6thm4d31c9j3ee1jck@google.com",
+      "id": "cor36phmc4pjabb6cooj2b9kccsj6bb170r36b9g6thm4d31c9j3ee1jck",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 0,
+      "start": {
+        "dateTime": "2024-06-12T12:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "Dog walk with Phil",
+      "updated": "2024-05-29T20:13:35.320Z"
+    },
+    {
+      "created": "2024-06-05T23:05:10.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-12T23:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3435257420940000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=NjhvNjRlMzQ2NHBqZWI5bGNoaDM4YjlrNzBvamViOW9jOG8zMGI5bDZjczZhY2o1YzhzamNwMW82OCBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "68o64e3464pjeb9lchh38b9k70ojeb9oc8o30b9l6cs6acj5c8sjcp1o68@google.com",
+      "id": "68o64e3464pjeb9lchh38b9k70ojeb9oc8o30b9l6cs6acj5c8sjcp1o68",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 0,
+      "start": {
+        "dateTime": "2024-06-12T19:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "Drinks with friends",
+      "updated": "2024-06-05T23:05:10.470Z"
+    },
+    {
+      "created": "2024-06-10T12:53:16.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-14T23:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3436047993860000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=NmdwMzJvOWc3NHEzNmJiMzY4cTZhYjlrYzVnamFiYjE2MHMzNGI5a2M4cTNhbzlvY2NwajRjcGhjYyBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "6gp32o9g74q36bb368q6ab9kc5gjabb160s34b9kc8q3ao9occpj4cphcc@google.com",
+      "id": "6gp32o9g74q36bb368q6ab9kc5gjabb160s34b9kc8q3ao9occpj4cphcc",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 0,
+      "start": {
+        "dateTime": "2024-06-14T19:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "Simpsons night at Ellie's",
+      "updated": "2024-06-10T12:53:16.930Z"
+    },
+    {
+      "attendees": [
+        {
+          "email": "jberdollt@gmail.com",
+          "organizer": true,
+          "responseStatus": "accepted"
+        },
+        {
+          "email": "charlesgrimes90@gmail.com",
+          "responseStatus": "tentative",
+          "self": true
+        }
+      ],
+      "created": "2019-02-22T13:20:05.000Z",
+      "creator": {
+        "email": "jberdollt@gmail.com"
+      },
+      "end": {
+        "date": "2024-06-16"
+      },
+      "etag": "\"3101683212724000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=NmdwajZkaGc2Z3FqMGJiMjZwaGplYjlrNmhpM2liYjE2NHFqMGJiNDY0cjYyb2I2NnRoamFkMWc2b18yMDI0MDYxNSBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "6gpj6dhg6gqj0bb26phjeb9k6hi3ibb164qj0bb464r62ob66thjad1g6o@google.com",
+      "id": "6gpj6dhg6gqj0bb26phjeb9k6hi3ibb164qj0bb464r62ob66thjad1g6o_20240615",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "jberdollt@gmail.com"
+      },
+      "originalStartTime": {
+        "date": "2024-06-15"
+      },
+      "recurringEventId": "6gpj6dhg6gqj0bb26phjeb9k6hi3ibb164qj0bb464r62ob66thjad1g6o",
+      "reminders": {
+        "useDefault": false
+      },
+      "sequence": 0,
+      "start": {
+        "date": "2024-06-15"
+      },
+      "status": "confirmed",
+      "summary": "Haru worming pill",
+      "transparency": "transparent",
+      "updated": "2019-02-22T13:20:06.362Z"
+    },
+    {
+      "created": "2023-05-05T10:21:50.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-15T12:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3422736314432000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=MDYybWhhbWVlYWliamo1bWd2c2c4MDFzNmpfMjAyNDA2MTVUMDkwMDAwWiBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "062mhameeaibjj5mgvsg801s6j_R20240330T100000@google.com",
+      "id": "062mhameeaibjj5mgvsg801s6j_20240615T090000Z",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "originalStartTime": {
+        "dateTime": "2024-06-15T10:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "recurringEventId": "062mhameeaibjj5mgvsg801s6j_R20240330T100000",
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 3,
+      "start": {
+        "dateTime": "2024-06-15T10:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "MMA class",
+      "updated": "2024-03-25T12:02:37.216Z"
+    },
+    {
+      "created": "2024-06-03T08:28:50.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-15T20:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3435921501456000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=YzRzM2VvcjU2OWlqaWI5bGNrcGphYjlrYzlpMzRiOXBjbGo2Y2I5aDY4cTY2YzM0YzRxamdjcGxjOCBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "c4s3eor569ijib9lckpjab9kc9i34b9pclj6cb9h68q66c34c4qjgcplc8@google.com",
+      "id": "c4s3eor569ijib9lckpjab9kc9i34b9pclj6cb9h68q66c34c4qjgcplc8",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 1,
+      "start": {
+        "dateTime": "2024-06-15T15:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "Tim's bbq",
+      "updated": "2024-06-09T19:19:10.728Z"
+    },
+    {
+      "created": "2024-05-16T13:20:23.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-16T14:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3431731246050000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=M2VxYzQzOXNxajFlN25mdjlmYmUxNXZmMGEgY2hhcmxlc2dyaW1lczkwQG0&ctz=Europe/London",
+      "iCalUID": "3eqc439sqj1e7nfv9fbe15vf0a@google.com",
+      "id": "3eqc439sqj1e7nfv9fbe15vf0a",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 0,
+      "start": {
+        "dateTime": "2024-06-16T13:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "Haru grooming",
+      "updated": "2024-05-16T13:20:23.025Z"
+    },
+    {
+      "created": "2023-05-09T15:51:58.000Z",
+      "creator": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "end": {
+        "dateTime": "2024-06-17T19:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "etag": "\"3416163528404000\"",
+      "eventType": "default",
+      "htmlLink": "https://www.google.com/calendar/event?eid=czgxYTV2bmhmbzBvbnRtODdycXNqNDJzNTZfMjAyNDA2MTdUMTcwMDAwWiBjaGFybGVzZ3JpbWVzOTBAbQ&ctz=Europe/London",
+      "iCalUID": "s81a5vnhfo0ontm87rqsj42s56@google.com",
+      "id": "s81a5vnhfo0ontm87rqsj42s56_20240617T170000Z",
+      "kind": "calendar#event",
+      "organizer": {
+        "email": "charlesgrimes90@gmail.com",
+        "self": true
+      },
+      "originalStartTime": {
+        "dateTime": "2024-06-17T18:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "recurringEventId": "s81a5vnhfo0ontm87rqsj42s56",
+      "reminders": {
+        "useDefault": true
+      },
+      "sequence": 1,
+      "start": {
+        "dateTime": "2024-06-17T18:00:00.000+01:00",
+        "timeZone": "Europe/London"
+      },
+      "status": "confirmed",
+      "summary": "MMA class",
+      "updated": "2024-02-16T11:09:24.202Z"
+    }
+  ],
+  "kind": "calendar#events",
+  "summary": "charlesgrimes90@gmail.com",
+  "timeZone": "Europe/London",
+  "updated": "2024-06-10T14:32:25.222Z"
+}

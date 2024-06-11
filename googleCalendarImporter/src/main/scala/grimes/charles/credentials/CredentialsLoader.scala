@@ -5,7 +5,6 @@ import cats.syntax.all.*
 import com.google.api.services.calendar.CalendarScopes.*
 import com.google.auth.oauth2.GoogleCredentials
 import io.circe.*
-import io.circe.generic.semiauto.deriveDecoder
 import io.circe.parser.*
 import org.http4s.Method.*
 import org.http4s.circe.jsonOf
@@ -20,17 +19,12 @@ import java.nio.charset.StandardCharsets.*
 
 class CredentialsLoader[F[_] : Async] {
   // https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html
-  private val credsUrl = uri"http://localhost:2773/systemsmanager/parameters/get"
-
-  case class Parameter(Value: String)
-  given parameterDecoder: Decoder[Parameter] = deriveDecoder[Parameter]
-  case class SSMResponse(Parameter: Parameter)
-  given ssmResponseDecoder: Decoder[SSMResponse] = deriveDecoder[SSMResponse]
-
+  private val ssmGetParamUrl = uri"http://localhost:2773/systemsmanager/parameters/get"
+  
   private def getCreds(credsName: String, awsSessionToken: String, client: Client[F]): F[ServiceAccountCreds] = {
     val request = Request[F](
       method = GET,
-      uri = credsUrl
+      uri = ssmGetParamUrl
         .withQueryParam("name", credsName)
         .withQueryParam("withDecryption", true),
       headers = Headers(
@@ -40,7 +34,7 @@ class CredentialsLoader[F[_] : Async] {
 
     for {
       ssmResponse <- client.expect[SSMResponse](request)(jsonOf[F, SSMResponse])
-      //_ = println(s"ssmResponse = $ssmResponse")
+      // The creds are stored in a string that SSM escapes, so have to decode the Value field.
       creds <- Async[F].fromEither(decode[ServiceAccountCreds](ssmResponse.Parameter.Value))
     } yield creds
   }
@@ -64,8 +58,15 @@ class CredentialsLoader[F[_] : Async] {
     val googleCreds = for {
       _ <- logger.info("Retrieving google service account credentials")
       creds <- getCreds(credsName, awsSessionToken, client)
-      //_ <- logger.info(s"credsJson = ${ServiceAccountCreds.encoder.apply(creds).toString}") // Todo: REMOVE!
-      credsInputStream = ByteArrayInputStream(ServiceAccountCreds.encoder.apply(creds).toString.getBytes(UTF_8.name))
+      credsInputStream <- Async[F].delay(
+        ByteArrayInputStream(
+          ServiceAccountCreds
+            .encoder
+            .apply(creds)
+            .toString
+            .getBytes(UTF_8.name)
+        )
+      )
 
       _ <- logger.info("Using google service account credentials to get access token")
       accessToken <- getAccessToken(credsInputStream)

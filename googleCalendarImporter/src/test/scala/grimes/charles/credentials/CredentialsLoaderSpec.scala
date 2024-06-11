@@ -11,14 +11,25 @@ import org.http4s.{Header, Headers}
 import org.typelevel.ci.CIStringSyntax
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import weaver.SimpleIOSuite
+import weaver.IOSuite
 
 import java.io.InputStream
+import java.nio.charset.StandardCharsets.*
 import java.util.UUID
 import scala.io.Source
 
-object CredentialsLoaderSpec extends SimpleIOSuite {
+object CredentialsLoaderSpec extends IOSuite {
+  override type Res = String
+
+  override def sharedResource: Resource[IO, String] = Resource.fromAutoCloseable(
+    IO.blocking(Source.fromURL(getClass.getResource("/ParamStoreResponse.json"), UTF_8.name))
+  ).map(_.mkString)
+
   private val credentialsLoaderStub = new CredentialsLoader[IO] {
+    private val googleCredentialsStub = new GoogleCredentials {
+      override def refreshIfExpired(): Unit = ()
+    }
+    
     override protected def buildCredsLoader(credsInputStream: InputStream, scopes: String*): IO[GoogleCredentials] =
       IO.raiseUnless(
         scopes == Seq("https://www.googleapis.com/auth/cloud-platform.read-only", CALENDAR_EVENTS_READONLY)
@@ -26,18 +37,10 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
         .as(googleCredentialsStub)
   }
 
-  private val googleCredentialsStub = new GoogleCredentials {
-    override def refreshIfExpired(): Unit = ()
-  }
-
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
   private val awsSessionToken = UUID.randomUUID().toString
   private val serviceAccountCredsName = "my-service-account"  // Todo: Assert this gets used.
-  private val serviceAccountCreds = " {\"type\": \"service_account\",\"project_id\": \"5678\",\"private_key_id\": \"1234\", \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvgWTCEJG1j\\n-----END PRIVATE KEY-----\\n\",\"client_email\": \"test@google.com\",\"client_id\": \"12345\",\"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\"token_uri\": \"https://oauth2.googleapis.com/token\", \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/test@google.com\",\"universe_domain\": \"googleapis.com\"}"
-  private val ssmParameterResponse = Resource.fromAutoCloseable(
-    IO.blocking(Source.fromURL(getClass.getResource("/ParamStoreResponse.json"), "utf-8"))
-  ).map(_.mkString)
 
   private val expectedHeaders = Headers(
     Header.Raw(ci"X-Aws-Parameters-Secrets-Token", awsSessionToken),
@@ -45,21 +48,31 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
   )
   private val expectedSSMUrl = "http://localhost:2773/systemsmanager/parameters/get?name=my-service-account&withDecryption=true"
 
-  test("Should load access token from service account credentials") {
-    // Todo: Makes this a singleton shared resource.
-    ssmParameterResponse.use { response =>
-      val stubClient = Client.apply[IO] { request =>
-        if (request.headers == expectedHeaders &&
-          request.uri.toString == expectedSSMUrl)
-          Resource.eval(Ok(response))
-        else Resource.eval(BadRequest())
+  test("Should load access token from service account credentials") { ssmParameterResponse =>
+    val stubClient = Client.apply[IO] { request =>
+      Resource.eval {
+        (
+          request.headers == expectedHeaders,
+          request.uri.toString == expectedSSMUrl,
+        ) match {
+          case (false, _) =>
+            logger.error(s"Unexpected request headers (${request.headers})") >>
+              BadRequest()
+          case (true, false) =>
+            logger.error(s"Unexpected URL (${request.uri.toString})") >>
+              BadRequest()
+          case _ => Ok(ssmParameterResponse)
+        }
       }
-
-      for {
-        result <- credentialsLoaderStub.load(
-          serviceAccountCredsName, awsSessionToken, stubClient
-        ).attempt
-      } yield expect(result.isRight)
     }
+
+    for {
+      result <- credentialsLoaderStub.load(
+        serviceAccountCredsName, awsSessionToken, stubClient
+      )
+    } yield expect.all(
+      result.getUniverseDomain == "googleapis.com",
+      result.getAuthenticationType == "OAuth2"
+    )
   }
 }
