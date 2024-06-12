@@ -50,23 +50,28 @@ object CalendarServiceSpec extends SimpleIOSuite {
   private val ownerEmail = "test@example.com"
   private val projectName = "life-aggregator-test"
 
+  private def buildCalendarServiceStub(daysWindow: Int, retrievedEvents: Events): CalendarService[IO] =
+    new CalendarService[IO] {
+      override protected def executeRequest(request: Calendar#Events#List): IO[Events] =
+        IO.raiseUnless(
+            request.getCalendarId == ownerEmail &&
+              request.getSingleEvents &&
+              request.getOrderBy == "starttime" &&
+              request.getTimeMin == timeMin &&
+              request.getTimeMax == DateTime(Date.from(now.plus(daysWindow, DAYS))) &&
+              request.getTimeZone == "Europe/London"
+          )(new RuntimeException("Incorrect request params"))
+          .as(retrievedEvents)
+    }
+
   Seq(
     1,
     7
   ).foreach { daysWindow =>
     test(s"Should retrieve calendar events for the next $daysWindow days using access token") {
-      val calendarServiceStub = new CalendarService[IO] {
-        override protected def executeRequest(request: Calendar#Events#List): IO[Events] =
-          IO.raiseUnless(
-              request.getCalendarId == ownerEmail &&
-                request.getSingleEvents &&
-                request.getOrderBy == "starttime" &&
-                request.getTimeMin == timeMin &&
-                request.getTimeMax == DateTime(Date.from(now.plus(daysWindow, DAYS))) &&
-                request.getTimeZone == "Europe/London"
-            )(new RuntimeException("Incorrect request params"))
-            .as(retrievedEvents)
-      }
+      val calendarServiceStub = buildCalendarServiceStub(
+        daysWindow, retrievedEvents
+      )
 
       for {
         result <- calendarServiceStub.retrieveEvents(
@@ -74,5 +79,17 @@ object CalendarServiceSpec extends SimpleIOSuite {
         )
       } yield expect(result == expectedEventsSummary)
     }
+  }
+
+  test(s"Should handle no calendar events gracefully") {
+    val calendarServiceStub = buildCalendarServiceStub(
+      daysWindow = 1, retrievedEvents = Events()
+    )
+
+    for {
+      result <- calendarServiceStub.retrieveEvents(
+        new GoogleCredentials {}, projectName, ownerEmail, now, 1
+      )
+    } yield expect(result.isEmpty)
   }
 }

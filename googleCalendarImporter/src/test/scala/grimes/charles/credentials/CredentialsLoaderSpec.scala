@@ -40,7 +40,7 @@ object CredentialsLoaderSpec extends IOSuite {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
   private val awsSessionToken = UUID.randomUUID().toString
-  private val serviceAccountCredsName = "my-service-account"  // Todo: Assert this gets used.
+  private val serviceAccountCredsName = "my-service-account"  
 
   private val expectedHeaders = Headers(
     Header.Raw(ci"X-Aws-Parameters-Secrets-Token", awsSessionToken),

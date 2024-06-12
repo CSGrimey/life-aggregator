@@ -21,6 +21,8 @@ lazy val commonSettings = Seq(
   ) ++ Resolver.sonatypeOssRepos("snapshots") ++ Resolver.sonatypeOssRepos("releases"),
   libraryDependencies ++= Seq(
     dependencies.awsLambda,
+    dependencies.circeCore,
+    dependencies.circeGeneric,
     dependencies.logback,
     dependencies.log4cats,
     dependencies.catsEffect,
@@ -62,14 +64,12 @@ lazy val googleCalendarImporter = project
     assembly / test := (Test / test).value,
     assemblySettings,
     libraryDependencies ++= Seq(
+      dependencies.circeParser,
       dependencies.googleAuth,
       dependencies.googleApi,
       dependencies.http4sEmberClient,
       dependencies.http4sDsl,
-      dependencies.http4sCirce,
-      dependencies.circeCore,
-      dependencies.circeParser,
-      dependencies.circeGeneric
+      dependencies.http4sCirce
     )
   )
   .dependsOn(common)

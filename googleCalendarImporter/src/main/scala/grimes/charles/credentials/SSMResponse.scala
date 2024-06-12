@@ -1,36 +1,35 @@
 package grimes.charles.credentials
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder, HCursor}
+import io.circe.{Decoder, Encoder}
+
+case class SSMResponse(Parameter: Parameter)
 
 object SSMResponse {
   given ssmResponseDecoder: Decoder[SSMResponse] = deriveDecoder[SSMResponse]
 }
 
-case class SSMResponse(Parameter: Parameter)
+case class Parameter(Value: String)
 
 object Parameter {
   given parameterDecoder: Decoder[Parameter] = deriveDecoder[Parameter]
 }
 
-case class Parameter(Value: String)
+case class ServiceAccountCreds(
+                                `type`: String,
+                                project_id: String,
+                                private_key_id: String,
+                                private_key: String,
+                                client_email: String,
+                                client_id: String,
+                                auth_uri: String,
+                                token_uri: String,
+                                auth_provider_x509_cert_url: String,
+                                client_x509_cert_url: String,
+                                universe_domain: String
+                              )
 
 object ServiceAccountCreds {
   given decoder: Decoder[ServiceAccountCreds] = deriveDecoder[ServiceAccountCreds]
   given encoder: Encoder[ServiceAccountCreds] = deriveEncoder[ServiceAccountCreds]
 }
-
-// Todo: Improve types? Also do we need every field?
-case class ServiceAccountCreds(
-                                `type`: String, 
-                                project_id: String, 
-                                private_key_id: String, 
-                                private_key: String, 
-                                client_email: String, 
-                                client_id: String, 
-                                auth_uri: String, 
-                                token_uri: String, 
-                                auth_provider_x509_cert_url: String, 
-                                client_x509_cert_url: String, 
-                                universe_domain: String
-                              )

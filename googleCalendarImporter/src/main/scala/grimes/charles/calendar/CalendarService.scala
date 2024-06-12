@@ -56,18 +56,21 @@ class CalendarService[F[_]: Sync] {
     } yield events
 
   private def transformEvents(events: Events): List[EventSummary] =
-    events
-      .getItems
-      .asScala
-      .map(event => {
-        val startDateTime = ZonedDateTime.ofInstant(
-          Instant.ofEpochMilli(
-            event.getStart.getDateTime.getValue
-          ), ZoneId.of("UTC")
-        )
+    events.getItems match {
+      case null => List()
+      case items =>
+        items
+          .asScala
+          .map(event => {
+            val startDateTime = ZonedDateTime.ofInstant(
+              Instant.ofEpochMilli(
+                event.getStart.getDateTime.getValue
+              ), ZoneId.of("UTC")
+            )
 
-        EventSummary(event.getSummary, startDateTime)
-      }).toList
+            EventSummary(event.getSummary, startDateTime)
+          }).toList
+    }
     
   protected def executeRequest(request: Calendar#Events#List): F[Events] =
     Sync[F].blocking(request.execute())
