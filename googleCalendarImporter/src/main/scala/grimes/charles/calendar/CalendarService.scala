@@ -88,6 +88,7 @@ class CalendarService[F[_]: Sync] {
 
       events <- retrieveEvents(calendarService, ownerEmail, now, daysWindow)
       summarisedEvents = transformEvents(events)
+      _ <- logger.info(s"Retrieved ${summarisedEvents.size} events")
     } yield summarisedEvents
 
     calendarEvents.onError(error =>

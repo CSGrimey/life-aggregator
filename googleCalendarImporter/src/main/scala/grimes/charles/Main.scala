@@ -6,21 +6,19 @@ import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import grimes.charles.calendar.CalendarService
+import grimes.charles.common.models.AggregatedData
 import grimes.charles.credentials.CredentialsLoader
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-import java.util
-import scala.jdk.CollectionConverters.*
-
-class Main extends RequestHandler[util.HashMap[String, String], String] {
+class Main extends RequestHandler[Object, String] {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
-  def handleRequest(input: util.HashMap[String, String], context: Context): String = 
-    run(input.asScala.toMap, context).unsafeRunSync()
+  def handleRequest(input: Object, context: Context): String =
+    run(input, context).unsafeRunSync()
 
-  private def run(input: Map[String, String], context: Context): IO[String] = 
+  private def run(input: Object, context: Context): IO[String] =
     EmberClientBuilder
       .default[IO]
       .build
@@ -37,12 +35,19 @@ class Main extends RequestHandler[util.HashMap[String, String], String] {
           )
 
           now <- Clock[IO].realTimeInstant
+          daysWindow = 1  // Todo: Read this from event
           events <- CalendarService[IO].retrieveEvents(
-            credentials, projectName, ownerEmail, now, 1
+            credentials, projectName, ownerEmail, now, daysWindow
           )
 
-          // Todo: Send events data in format expected by email builder lambda
-          result <- logger.info(s"events = $events")
-        } yield events.mkString
+          result = AggregatedData(
+            daysWindow,
+            aggregationType = "Google calendar events",
+            aggregationResults = events.map(event =>
+              s"${event.description} - ${event.startTime.toString}"
+            )
+          )
+          resultJson <- IO(AggregatedData.encoder.apply(result))
+        } yield resultJson.toString
       }
 }
