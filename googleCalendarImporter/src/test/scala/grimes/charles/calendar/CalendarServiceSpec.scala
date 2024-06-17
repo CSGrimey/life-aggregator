@@ -87,7 +87,7 @@ object CalendarServiceSpec extends SimpleIOSuite {
     }
   }
 
-  test(s"Should handle no calendar events gracefully") {
+  test("Should handle no calendar events gracefully") {
     val calendarServiceStub = buildCalendarServiceStub(
       daysWindow = 1, retrievedEvents = Events()
     )

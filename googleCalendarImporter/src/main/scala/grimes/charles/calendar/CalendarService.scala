@@ -66,7 +66,8 @@ class CalendarService[F[_]: Sync] {
               Instant.ofEpochMilli(
                 // All day events return a different field value (date) than regular events (dateTime)
                 Option(event.getStart.getDateTime)
-                  .getOrElse(event.getStart.getDate).getValue
+                  .getOrElse(event.getStart.getDate)
+                  .getValue
               ), ZoneId.of("UTC")
             )
 
