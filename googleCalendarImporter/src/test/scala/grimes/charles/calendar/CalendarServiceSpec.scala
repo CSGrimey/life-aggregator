@@ -31,18 +31,24 @@ object CalendarServiceSpec extends SimpleIOSuite {
           .setSummary("Event 2")
           .setStatus("Active")
           .setId("5678")
-          .setStart(EventDateTime().setDateTime(DateTime(Date.from(now.plus(2, DAYS))))),
+          .setStart(EventDateTime().setDate(DateTime(Date.from(now.plus(2, DAYS))))),
         Event()
           .setSummary("Event 3")
           .setStatus("Cancelled")
           .setId("9101112")
-          .setStart(EventDateTime().setDateTime(DateTime(Date.from(now.plus(5, DAYS)))))
+          .setStart(EventDateTime().setDateTime(DateTime(Date.from(now.plus(5, DAYS))))),
+        Event()
+          .setSummary("Event 4")
+          .setStatus("Active")
+          .setId("13141516")
+          .setStart(EventDateTime().setDate(DateTime(Date.from(now.plus(5, DAYS)))))
       ).asJava
     )
   private val expectedEventsSummary = List(
     EventSummary("Event 1", ZonedDateTime.ofInstant(now, utc)),
     EventSummary("Event 2", ZonedDateTime.ofInstant(now.plus(2, DAYS), utc)),
     EventSummary("Event 3", ZonedDateTime.ofInstant(now.plus(5, DAYS), utc)),
+    EventSummary("Event 4", ZonedDateTime.ofInstant(now.plus(5, DAYS), utc))
   )
 
   private given logger: Logger[IO] = Slf4jLogger.getLogger

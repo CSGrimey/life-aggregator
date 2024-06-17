@@ -64,7 +64,9 @@ class CalendarService[F[_]: Sync] {
           .map(event => {
             val startDateTime = ZonedDateTime.ofInstant(
               Instant.ofEpochMilli(
-                event.getStart.getDateTime.getValue
+                // All day events return a different field value (date) than regular events (dateTime)
+                Option(event.getStart.getDateTime)
+                  .getOrElse(event.getStart.getDate).getValue
               ), ZoneId.of("UTC")
             )
 
