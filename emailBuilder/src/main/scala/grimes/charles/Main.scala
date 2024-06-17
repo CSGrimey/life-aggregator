@@ -3,8 +3,10 @@ package grimes.charles
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
+import grimes.charles.common.models.AggregatedData
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import io.circe.parser.*
 
 import java.io.{InputStream, OutputStream}
 import java.nio.charset.StandardCharsets.UTF_8
@@ -13,18 +15,19 @@ import scala.io.Source
 class Main extends RequestStreamHandler {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
-  def handleRequest(input: InputStream, outputStream: OutputStream, context: Context): Unit =
-    run(input, outputStream, context).unsafeRunSync()
+  def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit =
+    run(inputStream, outputStream, context).unsafeRunSync()
 
-  private def run(input: InputStream, outputStream: OutputStream, context: Context): IO[OutputStream] =
+  private def run(inputStream: InputStream, outputStream: OutputStream, context: Context): IO[Unit] =
     for {
-      inputString <- IO(Source.fromInputStream(input, UTF_8.name).mkString)
-      _ <- logger.info(s"input = $inputString")
-      _ <- logger.info(s"name = ${context.getFunctionName}")
-      _ <- logger.info(s"aws request id = ${context.getAwsRequestId}")
-      _ <- logger.info(s"version = ${context.getFunctionVersion}")
+      _ <- logger.info("Reading aggregated data")
+      input <- IO(Source.fromInputStream(inputStream, UTF_8.name).mkString)
+      aggregatedData <- IO.fromEither(decode[StepFunctionInput](input)).map(_.input)
 
-      _ <- IO.blocking(outputStream.write(s"TODO: Send this input in html ($inputString)".getBytes(UTF_8.name)))
+      _ <- logger.info("Building HTML using aggregated data")
+      emailHtml = HtmlBuilder.build(List(aggregatedData))
+      
+      _ <- IO.blocking(outputStream.write(emailHtml.getBytes(UTF_8.name)))
       _ <- IO.blocking(outputStream.flush())
-    } yield outputStream
+    } yield ()
 }

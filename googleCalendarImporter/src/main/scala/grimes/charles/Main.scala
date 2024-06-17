@@ -3,22 +3,26 @@ package grimes.charles
 import cats.effect.IO
 import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.*
-import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.RequestHandler
+import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import grimes.charles.calendar.CalendarService
-import grimes.charles.common.models.AggregatedData
+import grimes.charles.common.models.{AggregatedData, InvocationData}
 import grimes.charles.credentials.CredentialsLoader
+import io.circe.parser.*
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class Main extends RequestHandler[Object, String] {
+import java.io.{InputStream, OutputStream}
+import java.nio.charset.StandardCharsets.UTF_8
+import scala.io.Source
+
+class Main extends RequestStreamHandler {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
-  def handleRequest(input: Object, context: Context): String =
-    run(input, context).unsafeRunSync()
+  def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit =
+    run(inputStream, outputStream, context).unsafeRunSync()
 
-  private def run(input: Object, context: Context): IO[String] =
+  private def run(inputStream: InputStream, outputStream: OutputStream, context: Context): IO[Unit] =
     EmberClientBuilder
       .default[IO]
       .build
@@ -30,24 +34,29 @@ class Main extends RequestHandler[Object, String] {
           ownerEmail <- IO(sys.env("OWNER_EMAIL"))
           projectName <- IO(sys.env("GOOGLE_PROJECT_NAME"))
 
+          _ <- logger.info("Reading invocation data")
+          input <- IO(Source.fromInputStream(inputStream, UTF_8.name).mkString)
+          invocationData <- IO.fromEither(decode[InvocationData](input))
+
           credentials <- CredentialsLoader[IO].load(
             credentialsName, awsSessionToken, client
           )
 
           now <- Clock[IO].realTimeInstant
-          daysWindow = 1  // Todo: Read this from event
           events <- CalendarService[IO].retrieveEvents(
-            credentials, projectName, ownerEmail, now, daysWindow
+            credentials, projectName, ownerEmail, now, invocationData.daysWindow
           )
 
           result = AggregatedData(
-            daysWindow,
+            invocationData.daysWindow,
             aggregationType = "Google calendar events",
             aggregationResults = events.map(event =>
               s"${event.description} - ${event.startTime.toString}"
             )
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
-        } yield resultJson.toString
+          _ <- IO.blocking(outputStream.write(resultJson.toString.getBytes(UTF_8.name)))
+          _ <- IO.blocking(outputStream.flush())
+        } yield ()
       }
 }

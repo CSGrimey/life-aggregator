@@ -55,7 +55,7 @@ class CalendarService[F[_]: Sync] {
       events <- executeRequest(eventsRequest)
     } yield events
 
-  private def transformEvents(events: Events): List[EventSummary] =
+  private def summariseEvents(events: Events): List[EventSummary] =
     events.getItems match {
       case null => List()
       case items =>
@@ -89,7 +89,7 @@ class CalendarService[F[_]: Sync] {
       calendarService <- buildCalendarService(credentials, projectName)
 
       events <- retrieveEvents(calendarService, ownerEmail, now, daysWindow)
-      summarisedEvents = transformEvents(events)
+      summarisedEvents = summariseEvents(events)
       _ <- logger.info(s"Retrieved ${summarisedEvents.size} events")
     } yield summarisedEvents
 
