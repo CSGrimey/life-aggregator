@@ -53,10 +53,7 @@ lazy val emailBuilder = project
     commonSettings,
     assembly / mainClass := Some("grimes.charles.Main"),
     assembly / test := (Test / test).value,
-    assemblySettings,
-    libraryDependencies ++= Seq(
-      dependencies.scalaTags
-    )
+    assemblySettings
   ).dependsOn(common)
 
 lazy val googleCalendarImporter = project
@@ -92,5 +89,4 @@ lazy val dependencies =
     val circeCore = "io.circe" %% "circe-core" % "0.15.0-M1"
     val circeGeneric = "io.circe" %% "circe-generic" % "0.15.0-M1"
     val circeParser = "io.circe" %% "circe-parser" % "0.15.0-M1"
-    val scalaTags = "com.lihaoyi" %% "scalatags" % "0.13.1"
   }

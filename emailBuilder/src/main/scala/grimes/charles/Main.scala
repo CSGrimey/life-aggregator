@@ -1,15 +1,18 @@
 package grimes.charles
 
 import cats.effect.IO
+import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.global
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import grimes.charles.common.models.AggregatedData
+import grimes.charles.models.EmailContent
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.circe.parser.*
 
 import java.io.{InputStream, OutputStream}
 import java.nio.charset.StandardCharsets.UTF_8
+import java.util.Date
 import scala.io.Source
 
 class Main extends RequestStreamHandler {
@@ -25,9 +28,11 @@ class Main extends RequestStreamHandler {
       aggregatedData <- IO.fromEither(decode[StepFunctionInput](input)).map(_.input)
 
       _ <- logger.info("Building HTML using aggregated data")
-      emailHtml = HtmlBuilder.build(List(aggregatedData))
+      date <- Clock[IO].realTimeInstant.map(Date.from)
+      emailContent = EmailContentBuilder.build(List(aggregatedData), date)
+      emailContentJson <- IO(EmailContent.encoder.apply(emailContent))
       
-      _ <- IO.blocking(outputStream.write(emailHtml.getBytes(UTF_8.name)))
+      _ <- IO.blocking(outputStream.write(emailContentJson.toString.getBytes(UTF_8.name)))
       _ <- IO.blocking(outputStream.flush())
     } yield ()
 }
