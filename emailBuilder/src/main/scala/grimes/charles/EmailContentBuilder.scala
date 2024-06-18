@@ -10,20 +10,12 @@ object EmailContentBuilder {
   def build(aggregatedData: List[AggregatedData], date: Date): EmailContent = {
     val subject = s"Life aggregator summary (${date.toString})"
 
-    aggregatedData match {
+    val body = aggregatedData match {
       case head :: _ =>
-        val body =
-          s"Aggregated data from ${head.aggregationType}\n${head.aggregationResults.mkString("\n")}"
-
-        EmailContent(
-          subject = subject,
-          body = body
-        )
-      case Nil =>
-        EmailContent(
-          subject = subject,
-          body = "No results returned from all integrations",
-        )
+        s"<p>Aggregated data from ${head.aggregationType}</p><p>${head.aggregationResults.mkString("\n")}</p>"
+      case Nil => "No results returned from all integrations"
     }
+
+    EmailContent(subject, body)
   }
 }
