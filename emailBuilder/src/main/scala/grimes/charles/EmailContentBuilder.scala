@@ -6,16 +6,23 @@ import grimes.charles.models.EmailContent
 import java.util.Date
 
 object EmailContentBuilder {
-  // Todo: Handle multiple aggregated data sources
   def build(aggregatedData: List[AggregatedData], date: Date): EmailContent = {
     val subject = s"Life aggregator summary (${date.toString})"
 
-    val body = aggregatedData match {
-      case head :: _ =>
-        s"<p><b>Aggregated data from ${head.aggregationType}</b></p>${head.aggregationResults.mkString("<p>", "<br>", "</p>")}"
-      case Nil => "No results returned from all integrations"
-    }
+    aggregatedData match {
+      case Nil => EmailContent(
+        subject,
+        body = "No results returned from all integrations"
+      )
+      case nonEmptyAggData =>
+        val body = nonEmptyAggData
+          .map(data => s"<p><b>Aggregated data from ${data.aggregationType}</b></p>${data.aggregationResults.mkString("<p>", "<br>", "</p>")}")
+          .mkString
 
-    EmailContent(subject, body)
+        EmailContent(
+          subject,
+          body
+        )
+    }
   }
 }

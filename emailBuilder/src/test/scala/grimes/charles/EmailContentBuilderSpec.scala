@@ -13,20 +13,30 @@ object EmailContentBuilderSpec extends SimpleIOSuite {
   private val expectedEmailSubject = "Life aggregator summary (Mon Jun 24 10:00:00 IST 2024)"
 
   pureTest("Should build valid HTML from aggregated data") {
-    val aggregatedData = AggregatedData(
-      daysWindow = 3,
-      aggregationType = "Unit test",
-      aggregationResults = List(
-        "Some data 1",
-        "Some data 3",
-        "Some data 2"
+    val aggregatedData = List(
+      AggregatedData(
+        daysWindow = 3,
+        aggregationType = "Unit test 1",
+        aggregationResults = List(
+          "Some data 1",
+          "Some data 3",
+          "Some data 2"
+        )
+      ),
+      AggregatedData(
+        daysWindow = 3,
+        aggregationType = "Unit test 2",
+        aggregationResults = List(
+          "Some data 1",
+          "Some data 2"
+        )
       )
     )
 
-    val emailContentResult = build(List(aggregatedData), date)
+    val emailContentResult = build(aggregatedData, date)
 
     val expectedEmailBody =
-      "<p><b>Aggregated data from Unit test</b></p><p>Some data 1<br>Some data 3<br>Some data 2</p>"
+      "<p><b>Aggregated data from Unit test 1</b></p><p>Some data 1<br>Some data 3<br>Some data 2</p><p><b>Aggregated data from Unit test 2</b></p><p>Some data 1<br>Some data 2</p>"
 
     expect(emailContentResult == EmailContent(expectedEmailSubject, expectedEmailBody))
   }

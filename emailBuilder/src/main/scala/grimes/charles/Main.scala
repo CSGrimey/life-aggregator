@@ -25,11 +25,11 @@ class Main extends RequestStreamHandler {
     for {
       _ <- logger.info("Reading aggregated data")
       input <- IO(Source.fromInputStream(inputStream, UTF_8.name).mkString)
-      aggregatedData <- IO.fromEither(decode[StepFunctionInput](input)).map(_.input)
+      aggregatedData <- IO.fromEither(decode[List[AggregatedData]](input))
 
       _ <- logger.info("Building HTML using aggregated data")
       date <- Clock[IO].realTimeInstant.map(Date.from)
-      emailContent = EmailContentBuilder.build(List(aggregatedData), date)
+      emailContent = EmailContentBuilder.build(aggregatedData, date)
       emailContentJson <- IO(EmailContent.encoder.apply(emailContent))
       
       _ <- IO.blocking(outputStream.write(emailContentJson.toString.getBytes(UTF_8.name)))
