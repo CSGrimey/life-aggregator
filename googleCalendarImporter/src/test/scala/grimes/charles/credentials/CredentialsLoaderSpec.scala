@@ -1,30 +1,17 @@
 package grimes.charles.credentials
 
 import cats.effect.IO
-import cats.effect.kernel.Resource
 import com.google.api.services.calendar.CalendarScopes.CALENDAR_EVENTS_READONLY
 import com.google.auth.oauth2.GoogleCredentials
-import org.http4s.Status.Ok
-import org.http4s.client.Client
+import grimes.charles.common.ssm.{Parameter, SSMResponse}
 import org.http4s.dsl.io.*
-import org.http4s.{Header, Headers}
-import org.typelevel.ci.CIStringSyntax
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import weaver.IOSuite
+import weaver.SimpleIOSuite
 
 import java.io.InputStream
-import java.nio.charset.StandardCharsets.*
-import java.util.UUID
-import scala.io.Source
 
-object CredentialsLoaderSpec extends IOSuite {
-  override type Res = String
-
-  override def sharedResource: Resource[IO, String] = Resource.fromAutoCloseable(
-    IO.blocking(Source.fromURL(getClass.getResource("/ParamStoreResponse.json"), UTF_8.name))
-  ).map(_.mkString)
-
+object CredentialsLoaderSpec extends SimpleIOSuite {
   private val credentialsLoaderStub = new CredentialsLoader[IO] {
     private val googleCredentialsStub = new GoogleCredentials {
       override def refreshIfExpired(): Unit = ()
@@ -39,37 +26,11 @@ object CredentialsLoaderSpec extends IOSuite {
 
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
-  private val awsSessionToken = UUID.randomUUID().toString
-  private val serviceAccountCredsName = "my-service-account"  
-
-  private val expectedHeaders = Headers(
-    Header.Raw(ci"X-Aws-Parameters-Secrets-Token", awsSessionToken),
-    Header.Raw(ci"Accept", "application/json")
-  )
-  private val expectedSSMUrl = "http://localhost:2773/systemsmanager/parameters/get?name=my-service-account&withDecryption=true"
-
-  test("Should load access token from service account credentials") { ssmParameterResponse =>
-    val stubClient = Client.apply[IO] { request =>
-      Resource.eval {
-        (
-          request.headers == expectedHeaders,
-          request.uri.toString == expectedSSMUrl,
-        ) match {
-          case (false, _) =>
-            logger.error(s"Unexpected request headers (${request.headers})") >>
-              BadRequest()
-          case (true, false) =>
-            logger.error(s"Unexpected URL (${request.uri.toString})") >>
-              BadRequest()
-          case _ => Ok(ssmParameterResponse)
-        }
-      }
-    }
+  test("Should load access token from service account credentials") {
+    val ssmParam = SSMResponse(Parameter("{\"type\":\"service_account\",\"project_id\":\"424114\",\"private_key_id\":\"12345\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\nObviouslyFake\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"test@example.gserviceaccount.com\",\"client_id\":\"4321\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\":\"https://www.googleapis.com/robot/v1/metadata/x509/test%40example.gserviceaccount.com\",\"universe_domain\":\"googleapis.com\"}"))
 
     for {
-      result <- credentialsLoaderStub.load(
-        serviceAccountCredsName, awsSessionToken, stubClient
-      )
+      result <- credentialsLoaderStub.load(ssmParam)
     } yield expect.all(
       result.getUniverseDomain == "googleapis.com",
       result.getAuthenticationType == "OAuth2"

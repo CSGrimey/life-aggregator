@@ -1,0 +1,11 @@
+{
+  "Parameter": {
+    "Name": "my-ssm-param",
+    "Type": "SecureString",
+    "Value": "Some value from params store",
+    "Version": 2,
+    "LastModifiedDate": "2024-06-07T14:48:41.641000+00:00",
+    "ARN": "arn:aws:ssm:eu-west-1:471:parameter/my-ssm-param",
+    "DataType": "text"
+  }
+}

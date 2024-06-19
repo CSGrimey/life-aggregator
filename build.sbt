@@ -36,13 +36,18 @@ lazy val root = project
   .in(file("."))
   .settings(commonSettings)
   .disablePlugins(AssemblyPlugin)
-  .aggregate(common, emailBuilder, googleCalendarImporter)
+  .aggregate(common, emailBuilder, googleCalendarImporter, todoistImporter)
 
 lazy val common = project
   .in(file("common"))
   .settings(
     name := "common",
-    commonSettings
+    commonSettings,
+    libraryDependencies ++= Seq(
+      dependencies.http4sEmberClient,
+      dependencies.http4sDsl,
+      dependencies.http4sCirce
+    )
   )
   .disablePlugins(AssemblyPlugin)
 
@@ -66,7 +71,20 @@ lazy val googleCalendarImporter = project
     assemblySettings,
     libraryDependencies ++= Seq(
       dependencies.googleAuth,
-      dependencies.googleApi,
+      dependencies.googleApi
+    )
+  )
+  .dependsOn(common)
+
+lazy val todoistImporter = project
+  .in(file("todoistImporter"))
+  .settings(
+    name := "todoistImporter",
+    commonSettings,
+    assembly / mainClass := Some("grimes.charles.Main"),
+    assembly / test := (Test / test).value,
+    assemblySettings,
+    libraryDependencies ++= Seq(
       dependencies.http4sEmberClient,
       dependencies.http4sDsl,
       dependencies.http4sCirce

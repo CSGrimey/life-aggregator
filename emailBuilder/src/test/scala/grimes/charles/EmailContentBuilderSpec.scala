@@ -26,7 +26,7 @@ object EmailContentBuilderSpec extends SimpleIOSuite {
     val emailContentResult = build(List(aggregatedData), date)
 
     val expectedEmailBody =
-      "<p>Aggregated data from Unit test</p><p>Some data 1\nSome data 3\nSome data 2</p>"
+      "<p><b>Aggregated data from Unit test</b></p><p>Some data 1<br>Some data 3<br>Some data 2</p>"
 
     expect(emailContentResult == EmailContent(expectedEmailSubject, expectedEmailBody))
   }

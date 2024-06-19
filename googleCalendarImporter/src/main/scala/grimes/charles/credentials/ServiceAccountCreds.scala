@@ -3,18 +3,6 @@ package grimes.charles.credentials
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 
-case class SSMResponse(Parameter: Parameter)
-
-object SSMResponse {
-  given ssmResponseDecoder: Decoder[SSMResponse] = deriveDecoder[SSMResponse]
-}
-
-case class Parameter(Value: String)
-
-object Parameter {
-  given parameterDecoder: Decoder[Parameter] = deriveDecoder[Parameter]
-}
-
 case class ServiceAccountCreds(
                                 `type`: String,
                                 project_id: String,

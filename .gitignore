@@ -44,3 +44,18 @@ project/plugins/project/
 *.class
 *.log
 
+/.idea/
+/.idea/**
+.idea/
+.idea/**
+/.idea/libraries/
+/.idea/modules/
+/.idea/aws.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/sbt.xml
+/.idea/scala_compiler.xml
+/.idea/scala_settings.xml
+/.idea/uiDesigner.xml
+/.idea/vcs.xml
+/.idea/workspace.xml

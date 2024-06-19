@@ -12,7 +12,7 @@ object EmailContentBuilder {
 
     val body = aggregatedData match {
       case head :: _ =>
-        s"<p>Aggregated data from ${head.aggregationType}</p><p>${head.aggregationResults.mkString("\n")}</p>"
+        s"<p><b>Aggregated data from ${head.aggregationType}</b></p>${head.aggregationResults.mkString("<p>", "<br>", "</p>")}"
       case Nil => "No results returned from all integrations"
     }
 

@@ -1,21 +1,18 @@
 package grimes.charles
 
 import cats.effect.IO
-import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
-import grimes.charles.calendar.CalendarService
 import grimes.charles.common.models.{AggregatedData, InvocationData}
 import grimes.charles.common.ssm.ParamsStore
-import grimes.charles.credentials.CredentialsLoader
-import io.circe.parser.*
-import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.io.{InputStream, OutputStream}
-import java.nio.charset.StandardCharsets.UTF_8
 import scala.io.Source
+import java.nio.charset.StandardCharsets.UTF_8
+import io.circe.parser.decode
+import org.http4s.ember.client.EmberClientBuilder
 
 class Main extends RequestStreamHandler {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
@@ -30,35 +27,22 @@ class Main extends RequestStreamHandler {
       .use { client =>
         for {
           _ <- logger.info("Reading env vars")
-          credentialsName <- IO(sys.env("CREDENTIALS_NAME"))
+          apiKeyName <- IO(sys.env("API_KEY_NAME"))
           awsSessionToken <- IO(sys.env("AWS_SESSION_TOKEN"))
-          ownerEmail <- IO(sys.env("OWNER_EMAIL"))
-          projectName <- IO(sys.env("GOOGLE_PROJECT_NAME"))
 
           _ <- logger.info("Reading invocation data")
           input <- IO(Source.fromInputStream(inputStream, UTF_8.name).mkString)
           invocationData <- IO.fromEither(decode[InvocationData](input))
 
-          _ <- logger.info("Retrieving credentials from params store")
-          serviceAccountCredsParam <- ParamsStore[IO].get(
-            credentialsName, awsSessionToken, client
-          )
-          
-          accessToken <- CredentialsLoader[IO].load(
-            serviceAccountCredsParam
-          )
-
-          now <- Clock[IO].realTimeInstant
-          events <- CalendarService[IO].retrieveEvents(
-            accessToken, projectName, ownerEmail, now, invocationData.daysWindow
+          _ <- logger.info("Retrieving api key from params store")
+          apiKeyParam <- ParamsStore[IO].get(
+            apiKeyName, awsSessionToken, client
           )
 
           result = AggregatedData(
             invocationData.daysWindow,
-            aggregationType = "Google calendar events",
-            aggregationResults = events.map(event =>
-              s"${event.description} - ${event.startTime.toString}"
-            )
+            aggregationType = "Todoist tasks",
+            aggregationResults = List("TODO")
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
           _ <- IO.blocking(outputStream.write(resultJson.toString.getBytes(UTF_8.name)))
