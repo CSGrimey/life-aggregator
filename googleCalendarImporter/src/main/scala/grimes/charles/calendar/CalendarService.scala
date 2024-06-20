@@ -14,7 +14,7 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
 import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoUnit.*
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.{Instant, LocalDateTime, ZoneId, ZonedDateTime}
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
@@ -33,6 +33,9 @@ class CalendarService[F[_]: Sync] {
           .build()
       }
 
+  private def toStartOfNextDay(now: Instant): Date =
+    Date.from(now.plus(1, DAYS).truncatedTo(DAYS))
+
   private def retrieveEvents(
                               calendarService: Calendar,
                               ownerEmail: String,
@@ -40,8 +43,8 @@ class CalendarService[F[_]: Sync] {
                               daysWindow: Int
                             )(using logger: Logger[F]): F[Events] =
     for {
-      timeMin <- Sync[F].pure(Date.from(now))
-      timeMax = Date.from(now.plus(daysWindow, DAYS)) 
+      timeMin <- Sync[F].delay(toStartOfNextDay(now))
+      timeMax = Date.from(timeMin.toInstant.plus(daysWindow, DAYS))
 
       _ <- logger.info(s"Retrieving events from $timeMin to $timeMax")
       eventsRequest = calendarService
@@ -68,7 +71,7 @@ class CalendarService[F[_]: Sync] {
                 Option(event.getStart.getDateTime)
                   .getOrElse(event.getStart.getDate)
                   .getValue
-              ), ZoneId.of("UTC")
+              ), ZoneId.of("Europe/London")
             )
 
             EventSummary(event.getSummary, startDateTime)

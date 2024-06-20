@@ -38,7 +38,9 @@ class Main extends RequestStreamHandler {
           _ <- logger.info("Reading invocation data")
           input <- IO(Source.fromInputStream(inputStream, UTF_8.name).mkString)
           invocationData <- IO.fromEither(decode[InvocationData](input))
-
+          _ <- IO.raiseWhen(invocationData.daysWindow <= 0)
+                           (RuntimeException("daysWindow must be positive"))
+          
           _ <- logger.info("Retrieving credentials from params store")
           serviceAccountCredsParam <- ParamsStore[IO].get(
             credentialsName, awsSessionToken, client
