@@ -60,24 +60,23 @@ object CalendarServiceSpec extends SimpleIOSuite {
 
   private def buildCalendarServiceStub(daysWindow: Int, retrievedEvents: Events): CalendarService[IO] =
     new CalendarService[IO] {
-      override protected def executeRequest(request: Calendar#Events#List): IO[Events] = {
+      override protected def executeRequest(request: Calendar#Events#List): IO[Events] =
         IO.raiseUnless(
-            request.getCalendarId == ownerEmail &&
-              request.getSingleEvents &&
-              request.getOrderBy == "starttime" &&
-              request.getTimeMin == timeMin &&
-              request.getTimeMax == GoogleDateTime(
-                Date.from(
-                  now
-                    .plus(1, DAYS)
-                    .truncatedTo(DAYS)
-                    .plus(daysWindow, DAYS)
-                )
-              ) &&
-              request.getTimeZone == "Europe/London"
-          )(new RuntimeException("Incorrect request params"))
-          .as(retrievedEvents)
-      }
+          request.getCalendarId == ownerEmail &&
+            request.getSingleEvents &&
+            request.getOrderBy == "starttime" &&
+            request.getTimeMin == timeMin &&
+            request.getTimeMax == GoogleDateTime(
+              Date.from(
+                now
+                  .plus(1, DAYS)
+                  .truncatedTo(DAYS)
+                  .plus(daysWindow, DAYS)
+              )
+            ) &&
+            request.getTimeZone == "Europe/London"
+        )(new RuntimeException("Incorrect request params"))
+        .as(retrievedEvents)
     }
 
   Seq(

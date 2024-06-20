@@ -14,11 +14,13 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
 import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoUnit.*
-import java.time.{Instant, LocalDateTime, ZoneId, ZonedDateTime}
+import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
 class CalendarService[F[_]: Sync] {
+  private val timeZone = "Europe/London"
+  
   private def buildCalendarService(credentials: GoogleCredentials, projectName: String): F[Calendar] =
     Sync[F]
       .delay(GoogleNetHttpTransport.newTrustedTransport())
@@ -54,7 +56,7 @@ class CalendarService[F[_]: Sync] {
         .setOrderBy("starttime")
         .setTimeMin(DateTime(timeMin))
         .setTimeMax(DateTime(timeMax))
-        .setTimeZone("Europe/London")
+        .setTimeZone(timeZone)
       events <- executeRequest(eventsRequest)
     } yield events
 
@@ -71,7 +73,7 @@ class CalendarService[F[_]: Sync] {
                 Option(event.getStart.getDateTime)
                   .getOrElse(event.getStart.getDate)
                   .getValue
-              ), ZoneId.of("Europe/London")
+              ), ZoneId.of(timeZone)
             )
 
             EventSummary(event.getSummary, startDateTime)
