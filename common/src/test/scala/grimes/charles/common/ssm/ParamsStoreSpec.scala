@@ -37,7 +37,7 @@ object ParamsStoreSpec extends IOSuite {
       Resource.eval {
         (
           request.headers == expectedHeaders,
-          request.uri.toString == expectedSSMUrl,
+          request.uri.toString == expectedSSMUrl
         ) match {
           case (false, _) =>
             logger.error(s"Unexpected request headers (${request.headers})") >>
@@ -51,7 +51,9 @@ object ParamsStoreSpec extends IOSuite {
     }
 
     for {
-      result <- ParamsStore[IO].get(ssmParamName, awsSessionToken, clientStub)
+      result <- ParamsStore[IO].get(
+        ssmParamName, awsSessionToken, clientStub
+      )
     } yield expect(result.Parameter.Value == "Some value from params store")
   }
 }

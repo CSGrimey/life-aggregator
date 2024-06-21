@@ -5,6 +5,7 @@ import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import grimes.charles.common.models.{AggregatedData, InvocationData}
 import grimes.charles.common.ssm.ParamsStore
+import grimes.charles.todoist.TaskService
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -41,10 +42,16 @@ class Main extends RequestStreamHandler {
             apiKeyName, awsSessionToken, client
           )
 
+          incompletedTasks <- TaskService[IO].getIncompletedTasks(
+            apiKeyParam.Parameter.Value, invocationData.daysWindow, client
+          )
+
           result = AggregatedData(
             invocationData.daysWindow,
-            aggregationType = "Todoist tasks",
-            aggregationResults = List("TODO")
+            aggregationType = "Todoist incompleted tasks",
+            aggregationResults = incompletedTasks.map(task =>
+              s"${task.content} - ${task.due.date}"
+            )
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
           _ <- IO.blocking(outputStream.write(resultJson.toString.getBytes(UTF_8.name)))
