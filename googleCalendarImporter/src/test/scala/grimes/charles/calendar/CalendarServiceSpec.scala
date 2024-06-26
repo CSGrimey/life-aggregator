@@ -47,10 +47,10 @@ object CalendarServiceSpec extends SimpleIOSuite {
       ).asJava
     )
   private val expectedEventsSummary = List(
-    EventSummary("Event 1", ZonedDateTime.ofInstant(now, zoneId)),
-    EventSummary("Event 2", ZonedDateTime.ofInstant(now.plus(1, DAYS), zoneId)),
-    EventSummary("Event 3", ZonedDateTime.ofInstant(now.plus(3, DAYS), zoneId)),
-    EventSummary("Event 4", ZonedDateTime.ofInstant(now.plus(5, DAYS), zoneId))
+    EventSummary("Event 1", "24/06/2024"),
+    EventSummary("Event 2", "25/06/2024"),
+    EventSummary("Event 3", "27/06/2024"),
+    EventSummary("Event 4", "29/06/2024")
   )
 
   private given logger: Logger[IO] = Slf4jLogger.getLogger

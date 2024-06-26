@@ -10,6 +10,7 @@ import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.model.Events
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
+import grimes.charles.common.utils.OutputsDate
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
 import java.time.temporal.ChronoUnit
@@ -18,7 +19,7 @@ import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
-class CalendarService[F[_]: Sync] {
+class CalendarService[F[_]: Sync] extends OutputsDate {
   private val timeZone = "Europe/London"
   
   private def buildCalendarService(credentials: GoogleCredentials, projectName: String): F[Calendar] =
@@ -74,7 +75,7 @@ class CalendarService[F[_]: Sync] {
                   .getOrElse(event.getStart.getDate)
                   .getValue
               ), ZoneId.of(timeZone)
-            )
+            ).format(dateFormatter)
 
             EventSummary(event.getSummary, startDateTime)
           }).toList

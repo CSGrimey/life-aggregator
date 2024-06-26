@@ -29,7 +29,7 @@ object TaskServiceSpec  extends IOSuite {
   )
 
   Seq(1, 7).foreach { daysWindow =>
-    test(s"Should filter next $daysWindow of tasks"){ todoistResponse =>
+    test(s"Should filter next $daysWindow days of tasks"){ todoistResponse =>
       val clientStub = Client.apply[IO] { request =>
         Resource.eval {
           (
@@ -53,11 +53,11 @@ object TaskServiceSpec  extends IOSuite {
         )
       } yield expect(
         result == List(
-          TodoistTask("Install smoke alarm", Due("2024-03-12")),
-          TodoistTask("Tidy gym", Due("2024-05-11")),
-          TodoistTask("Mow lawn", Due("2024-06-23")),
-          TodoistTask("test tomorrow", Due("2024-06-22")),
-          TodoistTask("test today", Due("2024-06-21"))
+          TodoistTask("Install smoke alarm", Due("12/03/2024")),
+          TodoistTask("Tidy gym", Due("11/05/2024")),
+          TodoistTask("Mow lawn", Due("23/06/2024")),
+          TodoistTask("test tomorrow", Due("22/06/2024")),
+          TodoistTask("test today", Due("21/06/2024"))
         )
       )
     }

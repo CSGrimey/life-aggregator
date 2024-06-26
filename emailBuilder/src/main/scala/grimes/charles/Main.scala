@@ -12,7 +12,7 @@ import io.circe.parser.*
 
 import java.io.{InputStream, OutputStream}
 import java.nio.charset.StandardCharsets.UTF_8
-import java.util.Date
+import java.time.LocalDate
 import scala.io.Source
 
 class Main extends RequestStreamHandler {
@@ -28,7 +28,7 @@ class Main extends RequestStreamHandler {
       aggregatedData <- IO.fromEither(decode[List[AggregatedData]](input))
 
       _ <- logger.info("Building HTML using aggregated data")
-      date <- Clock[IO].realTimeInstant.map(Date.from)
+      date <- Clock[IO].realTimeInstant.map(LocalDate.from)
       emailContent = EmailContentBuilder.build(aggregatedData, date)
       emailContentJson <- IO(EmailContent.encoder.apply(emailContent))
       
