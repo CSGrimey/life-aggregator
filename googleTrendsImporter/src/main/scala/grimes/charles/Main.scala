@@ -1,14 +1,11 @@
 package grimes.charles
 
 import cats.effect.IO
-import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
-import grimes.charles.calendar.CalendarService
 import grimes.charles.common.models.{AggregatedData, InvocationData}
 import grimes.charles.common.ssm.ParamsStore
-import grimes.charles.credentials.CredentialsLoader
-import io.circe.parser.*
+import io.circe.parser.decode
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -32,35 +29,24 @@ class Main extends RequestStreamHandler {
           _ <- logger.info("Reading env vars")
           credentialsName <- IO(sys.env("CREDENTIALS_NAME"))
           awsSessionToken <- IO(sys.env("AWS_SESSION_TOKEN"))
-          ownerEmail <- IO(sys.env("OWNER_EMAIL"))
-          projectName <- IO(sys.env("GOOGLE_PROJECT_NAME"))
 
           _ <- logger.info("Reading invocation data")
           input <- IO(Source.fromInputStream(inputStream, UTF_8.name).mkString)
           invocationData <- IO.fromEither(decode[InvocationData](input))
           _ <- IO.raiseWhen(invocationData.daysWindow <= 0)
-                           (RuntimeException("daysWindow must be positive"))
-          
+            (RuntimeException("daysWindow must be positive"))
+
           _ <- logger.info("Retrieving credentials from params store")
           serviceAccountCredsParam <- ParamsStore[IO].get(
             credentialsName, awsSessionToken, client
           )
-          
-          accessToken <- CredentialsLoader[IO].load(
-            serviceAccountCredsParam
-          )
 
-          now <- Clock[IO].realTimeInstant
-          events <- CalendarService[IO].retrieveEvents(
-            accessToken, projectName, ownerEmail, now, invocationData.daysWindow
-          )
+          // Todo: Query BigQuery data.
 
           result = AggregatedData(
             invocationData.daysWindow,
-            aggregationType = "Google calendar events",
-            aggregationResults = events.map(event =>
-              s"${event.description} - ${event.startTime}"
-            )
+            aggregationType = "Google trends",
+            aggregationResults = List("TODO")
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
           _ <- IO.blocking(outputStream.write(

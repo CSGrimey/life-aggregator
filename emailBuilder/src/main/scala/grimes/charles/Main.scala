@@ -5,6 +5,7 @@ import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.global
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import grimes.charles.common.models.AggregatedData
+import grimes.charles.common.utils.OutputsDate
 import grimes.charles.models.EmailContent
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -12,10 +13,10 @@ import io.circe.parser.*
 
 import java.io.{InputStream, OutputStream}
 import java.nio.charset.StandardCharsets.UTF_8
-import java.time.LocalDate
+import java.time.{LocalDate, ZoneId}
 import scala.io.Source
 
-class Main extends RequestStreamHandler {
+class Main extends RequestStreamHandler with OutputsDate {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
   def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit =
@@ -28,7 +29,7 @@ class Main extends RequestStreamHandler {
       aggregatedData <- IO.fromEither(decode[List[AggregatedData]](input))
 
       _ <- logger.info("Building HTML using aggregated data")
-      date <- Clock[IO].realTimeInstant.map(LocalDate.from)
+      date <- Clock[IO].realTimeInstant.map(_.atZone(ZoneId.of(timeZone)).toLocalDate)
       emailContent = EmailContentBuilder.build(aggregatedData, date)
       emailContentJson <- IO(EmailContent.encoder.apply(emailContent))
       

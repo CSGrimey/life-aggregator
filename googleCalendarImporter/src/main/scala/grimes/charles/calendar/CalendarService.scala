@@ -20,8 +20,6 @@ import java.util.Date
 import scala.jdk.CollectionConverters.*
 
 class CalendarService[F[_]: Sync] extends OutputsDate {
-  private val timeZone = "Europe/London"
-  
   private def buildCalendarService(credentials: GoogleCredentials, projectName: String): F[Calendar] =
     Sync[F]
       .delay(GoogleNetHttpTransport.newTrustedTransport())

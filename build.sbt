@@ -36,7 +36,7 @@ lazy val root = project
   .in(file("."))
   .settings(commonSettings)
   .disablePlugins(AssemblyPlugin)
-  .aggregate(common, emailBuilder, googleCalendarImporter, todoistImporter)
+  .aggregate(common, emailBuilder, googleCalendarImporter, googleTrendsImporter, todoistImporter)
 
 lazy val common = project
   .in(file("common"))
@@ -76,6 +76,21 @@ lazy val googleCalendarImporter = project
   )
   .dependsOn(common)
 
+lazy val googleTrendsImporter = project
+  .in(file("googleTrendsImporter"))
+  .settings(
+    name := "googleTrendsImporter",
+    commonSettings,
+    assembly / mainClass := Some("grimes.charles.Main"),
+    assembly / test := (Test / test).value,
+    assemblySettings,
+    libraryDependencies ++= Seq(
+      dependencies.googleAuth,
+      dependencies.googleBigQuery
+    )
+  )
+  .dependsOn(common)
+
 lazy val todoistImporter = project
   .in(file("todoistImporter"))
   .settings(
@@ -99,6 +114,7 @@ lazy val dependencies =
     val log4cats = "org.typelevel" %% "log4cats-slf4j" % "2.7.0"
     val googleAuth = "com.google.auth" % "google-auth-library-oauth2-http" % "1.23.0"
     val googleApi = "com.google.apis" % "google-api-services-calendar" % "v3-rev20240419-2.0.0"
+    val googleBigQuery = "com.google.cloud" % "google-cloud-bigquery" % "1.137.2"
     val catsEffect = "org.typelevel" %% "cats-effect" % "3.5.4"
     val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.4" % Test
     val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % "0.23.27"
