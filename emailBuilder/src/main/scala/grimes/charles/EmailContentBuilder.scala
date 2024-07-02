@@ -30,7 +30,7 @@ object EmailContentBuilder extends OutputsDate {
       )
       case nonEmptyAggData =>
         val body = nonEmptyAggData
-          .map(data => s"<p><b>Aggregated data from ${data.aggregationType}</b></p>${data.aggregationResults.mkString("<p>", "<br>", "</p>")}")
+          .map(data => s"<p><b>${data.aggregationType}</b></p>${data.aggregationResults.mkString("<p>", "<br>", "</p>")}")
           .mkString
 
         EmailContent(subject, body)

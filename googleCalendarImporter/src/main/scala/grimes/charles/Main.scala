@@ -1,17 +1,19 @@
 package grimes.charles
 
+import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import grimes.charles.calendar.CalendarService
+import grimes.charles.common.google.credentials.CredentialsLoader
 import grimes.charles.common.models.{AggregatedData, InvocationData}
 import grimes.charles.common.ssm.ParamsStore
-import grimes.charles.credentials.CredentialsLoader
 import io.circe.parser.*
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import com.google.api.services.calendar.CalendarScopes.CALENDAR_EVENTS_READONLY
 
 import java.io.{InputStream, OutputStream}
 import java.nio.charset.StandardCharsets.UTF_8
@@ -47,7 +49,11 @@ class Main extends RequestStreamHandler {
           )
           
           accessToken <- CredentialsLoader[IO].load(
-            serviceAccountCredsParam
+            serviceAccountCredsParam,
+            NonEmptyList.of(
+              "https://www.googleapis.com/auth/cloud-platform.read-only",
+              CALENDAR_EVENTS_READONLY
+            )
           )
 
           now <- Clock[IO].realTimeInstant

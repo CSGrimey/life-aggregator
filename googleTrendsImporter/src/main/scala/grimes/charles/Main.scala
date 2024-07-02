@@ -1,10 +1,13 @@
 package grimes.charles
 
+import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
+import grimes.charles.common.google.credentials.CredentialsLoader
 import grimes.charles.common.models.{AggregatedData, InvocationData}
 import grimes.charles.common.ssm.ParamsStore
+import grimes.charles.trends.TrendsService
 import io.circe.parser.decode
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
@@ -41,12 +44,21 @@ class Main extends RequestStreamHandler {
             credentialsName, awsSessionToken, client
           )
 
-          // Todo: Query BigQuery data.
+          accessToken <- CredentialsLoader[IO].load(
+            serviceAccountCredsParam,
+            NonEmptyList.one(
+              "https://www.googleapis.com/auth/cloud-platform.read-only"
+            )
+          )
+
+          trends <- TrendsService[IO].retrieveTrends(
+            accessToken, invocationData.daysWindow
+          )
 
           result = AggregatedData(
             invocationData.daysWindow,
             aggregationType = "Google trends",
-            aggregationResults = List("TODO")
+            aggregationResults = trends
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
           _ <- IO.blocking(outputStream.write(

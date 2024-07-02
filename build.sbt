@@ -27,7 +27,8 @@ lazy val commonSettings = Seq(
     dependencies.logback,
     dependencies.log4cats,
     dependencies.catsEffect,
-    dependencies.weaver
+    dependencies.weaver,
+    dependencies.googleAuth
   ),
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
@@ -70,7 +71,6 @@ lazy val googleCalendarImporter = project
     assembly / test := (Test / test).value,
     assemblySettings,
     libraryDependencies ++= Seq(
-      dependencies.googleAuth,
       dependencies.googleApi
     )
   )
@@ -85,7 +85,6 @@ lazy val googleTrendsImporter = project
     assembly / test := (Test / test).value,
     assemblySettings,
     libraryDependencies ++= Seq(
-      dependencies.googleAuth,
       dependencies.googleBigQuery
     )
   )

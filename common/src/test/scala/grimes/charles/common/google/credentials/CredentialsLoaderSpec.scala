@@ -1,7 +1,7 @@
-package grimes.charles.credentials
+package grimes.charles.common.google.credentials
 
+import cats.data.NonEmptyList
 import cats.effect.IO
-import com.google.api.services.calendar.CalendarScopes.CALENDAR_EVENTS_READONLY
 import com.google.auth.oauth2.GoogleCredentials
 import grimes.charles.common.ssm.{Parameter, SSMResponse}
 import org.http4s.dsl.io.*
@@ -17,9 +17,12 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
       override def refreshIfExpired(): Unit = ()
     }
     
-    override protected def buildCredsLoader(credsInputStream: InputStream, scopes: String*): IO[GoogleCredentials] =
+    override protected def buildCredsLoader(credsInputStream: InputStream, scopes: NonEmptyList[String]): IO[GoogleCredentials] =
       IO.raiseUnless(
-        scopes == Seq("https://www.googleapis.com/auth/cloud-platform.read-only", CALENDAR_EVENTS_READONLY)
+        scopes == NonEmptyList.of(
+          "https://www.googleapis.com/auth/cloud-platform.read-only",
+          "https://www.googleapis.com/auth/calendar.events.readonly"
+        )
       )(new RuntimeException("Incorrect scopes"))
         .as(googleCredentialsStub)
   }
@@ -30,7 +33,13 @@ object CredentialsLoaderSpec extends SimpleIOSuite {
     val ssmParam = SSMResponse(Parameter("{\"type\":\"service_account\",\"project_id\":\"424114\",\"private_key_id\":\"12345\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\nObviouslyFake\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"test@example.gserviceaccount.com\",\"client_id\":\"4321\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\":\"https://www.googleapis.com/robot/v1/metadata/x509/test%40example.gserviceaccount.com\",\"universe_domain\":\"googleapis.com\"}"))
 
     for {
-      result <- credentialsLoaderStub.load(ssmParam)
+      result <- credentialsLoaderStub.load(
+        ssmParam,
+        NonEmptyList.of(
+          "https://www.googleapis.com/auth/cloud-platform.read-only",
+          "https://www.googleapis.com/auth/calendar.events.readonly"
+        )
+      )
     } yield expect.all(
       result.getUniverseDomain == "googleapis.com",
       result.getAuthenticationType == "OAuth2"

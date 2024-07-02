@@ -10,7 +10,7 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.SimpleIOSuite
 
 import java.time.temporal.ChronoUnit.DAYS
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.{Instant, ZoneId}
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
@@ -75,7 +75,7 @@ object CalendarServiceSpec extends SimpleIOSuite {
               )
             ) &&
             request.getTimeZone == "Europe/London"
-        )(new RuntimeException("Incorrect request params"))
+        )(RuntimeException("Incorrect request params"))
         .as(retrievedEvents)
     }
 

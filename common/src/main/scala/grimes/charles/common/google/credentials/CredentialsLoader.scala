@@ -1,8 +1,8 @@
-package grimes.charles.credentials
+package grimes.charles.common.google.credentials
 
+import cats.data.NonEmptyList
 import cats.effect.Sync
 import cats.syntax.all.*
-import com.google.api.services.calendar.CalendarScopes.*
 import com.google.auth.oauth2.GoogleCredentials
 import grimes.charles.common.ssm.SSMResponse
 import io.circe.*
@@ -11,6 +11,7 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.nio.charset.StandardCharsets.*
+import scala.jdk.CollectionConverters.*
 
 class CredentialsLoader[F[_] : Sync] {
   private def getCreds(ssmResponse: SSMResponse): F[ServiceAccountCreds] = 
@@ -21,21 +22,20 @@ class CredentialsLoader[F[_] : Sync] {
       )
     } yield creds
   
-  protected def buildCredsLoader(credsInputStream: InputStream, scopes: String*): F[GoogleCredentials] =
+  protected def buildCredsLoader(credsInputStream: InputStream, scopes: NonEmptyList[String]): F[GoogleCredentials] =
     Sync[F].blocking(GoogleCredentials.fromStream(credsInputStream))
-      .map(_.createScoped(scopes*))
+      .map(_.createScoped(scopes.toList.asJava))
 
-  private def getAccessToken(credsInputStream: InputStream): F[GoogleCredentials] =
+  private def getAccessToken(credsInputStream: InputStream, scopes: NonEmptyList[String]): F[GoogleCredentials] =
     for {
       googleCreds <- buildCredsLoader(
-        credsInputStream, 
-        "https://www.googleapis.com/auth/cloud-platform.read-only", 
-        CALENDAR_EVENTS_READONLY
+        credsInputStream,
+        scopes
       )
       _ <- Sync[F].blocking(googleCreds.refreshIfExpired())
     } yield googleCreds
 
-  def load(ssmResponse: SSMResponse)
+  def load(ssmResponse: SSMResponse, scopes: NonEmptyList[String])
           (using logger: Logger[F]): F[GoogleCredentials] = {
     val googleCreds = for {
       _ <- logger.info("Retrieving google service account credentials")
@@ -51,7 +51,7 @@ class CredentialsLoader[F[_] : Sync] {
       )
 
       _ <- logger.info("Using google service account credentials to get access token")
-      accessToken <- getAccessToken(credsInputStream)
+      accessToken <- getAccessToken(credsInputStream, scopes)
     } yield accessToken
 
     googleCreds.onError(error =>

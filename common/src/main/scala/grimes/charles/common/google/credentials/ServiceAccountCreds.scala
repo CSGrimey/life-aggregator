@@ -1,4 +1,4 @@
-package grimes.charles.credentials
+package grimes.charles.common.google.credentials
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
