@@ -59,8 +59,16 @@ lazy val emailBuilder = project
     commonSettings,
     assembly / mainClass := Some("grimes.charles.Main"),
     assembly / test := (Test / test).value,
-    assemblySettings
+    assemblySettings,
+    s3Upload / mappings := Seq(
+      (
+        target.value / "scala-3.4.1" / (assembly / assemblyJarName).value,
+        s"deployment/${(assembly / assemblyJarName).value}"
+      )
+    ),
+    s3Upload / s3Host := "charles-grimes-manual-test"
   ).dependsOn(common)
+  .enablePlugins(S3Plugin)
 
 lazy val googleCalendarImporter = project
   .in(file("googleCalendarImporter"))
@@ -72,9 +80,17 @@ lazy val googleCalendarImporter = project
     assemblySettings,
     libraryDependencies ++= Seq(
       dependencies.googleApi
-    )
+    ),
+    s3Upload / mappings := Seq(
+      (
+        target.value / "scala-3.4.1" / (assembly / assemblyJarName).value,
+        s"deployment/${(assembly / assemblyJarName).value}"
+      )
+    ),
+    s3Upload / s3Host := "charles-grimes-manual-test"
   )
   .dependsOn(common)
+  .enablePlugins(S3Plugin)
 
 lazy val googleTrendsImporter = project
   .in(file("googleTrendsImporter"))
@@ -86,9 +102,17 @@ lazy val googleTrendsImporter = project
     assemblySettings,
     libraryDependencies ++= Seq(
       dependencies.googleBigQuery
-    )
+    ),
+    s3Upload / mappings := Seq(
+      (
+        target.value / "scala-3.4.1" / (assembly / assemblyJarName).value,
+        s"deployment/${(assembly / assemblyJarName).value}"
+      )
+    ),
+    s3Upload / s3Host := "charles-grimes-manual-test"
   )
   .dependsOn(common)
+  .enablePlugins(S3Plugin)
 
 lazy val todoistImporter = project
   .in(file("todoistImporter"))
@@ -102,9 +126,17 @@ lazy val todoistImporter = project
       dependencies.http4sEmberClient,
       dependencies.http4sDsl,
       dependencies.http4sCirce
-    )
+    ),
+    s3Upload / mappings := Seq(
+      (
+        target.value / "scala-3.4.1" / (assembly / assemblyJarName).value,
+        s"deployment/${(assembly / assemblyJarName).value}"
+      )
+    ),
+    s3Upload / s3Host := "charles-grimes-manual-test"
   )
   .dependsOn(common)
+  .enablePlugins(S3Plugin)
 
 lazy val dependencies =
   new {

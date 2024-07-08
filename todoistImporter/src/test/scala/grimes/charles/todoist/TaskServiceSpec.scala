@@ -29,7 +29,7 @@ object TaskServiceSpec  extends IOSuite {
   )
 
   Seq(1, 7).foreach { daysWindow =>
-    test(s"Should filter next $daysWindow days of tasks"){ todoistResponse =>
+    test(s"Should filter next $daysWindow days of todoist tasks"){ todoistResponse =>
       val clientStub = Client.apply[IO] { request =>
         Resource.eval {
           (
