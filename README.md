@@ -1,5 +1,5 @@
 # life-aggregator
-A daily/weekly aggregator of useful information from various apps.
+A daily/weekly aggregator of useful information from Google calendar and Todoist, while also showing the most searched for terms in England that day/week.
 
 Below is a screenshot of the step function (stood up by my private terraform repo) that uses the code in this repo.
 ![Screenshot_20240702_145837](https://github.com/CSGrimey/life-aggregator/assets/2895932/8607e483-b429-4cdb-a299-c13533afeb45)
