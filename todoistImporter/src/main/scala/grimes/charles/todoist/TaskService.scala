@@ -11,6 +11,7 @@ import org.http4s.implicits.*
 import org.http4s.{AuthScheme, Credentials, Header, Headers, Method, Request, Uri}
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
+import java.text.DateFormat
 import java.time.LocalDate
 
 class TaskService[F[_] : Async] extends OutputsDate {
@@ -33,7 +34,7 @@ class TaskService[F[_] : Async] extends OutputsDate {
       tasks <- client.expect[List[TodoistTask]](request)(jsonOf[F, List[TodoistTask]])
       formattedTasks = tasks.map { task =>
         task.copy(due = Due(LocalDate.parse(task.due.date).format(dateFormatter)))
-      }
+      }.sortBy(task => LocalDate.parse(task.due.date, dateFormatter).toEpochDay)
     } yield formattedTasks
 
     todoistTasks.onError(error =>

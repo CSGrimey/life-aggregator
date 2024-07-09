@@ -55,9 +55,9 @@ object TaskServiceSpec  extends IOSuite {
         result == List(
           TodoistTask("Install smoke alarm", Due("12/03/2024")),
           TodoistTask("Tidy gym", Due("11/05/2024")),
-          TodoistTask("Mow lawn", Due("23/06/2024")),
+          TodoistTask("test today", Due("21/06/2024")),
           TodoistTask("test tomorrow", Due("22/06/2024")),
-          TodoistTask("test today", Due("21/06/2024"))
+          TodoistTask("Mow lawn", Due("23/06/2024"))
         )
       )
     }
