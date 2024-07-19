@@ -51,7 +51,7 @@ class Main extends RequestStreamHandler {
             )
           )
 
-          trends <- TrendsService[IO].retrieveTrends(
+          trends <- TrendsService[IO].retrieveTrendsAsLinks(
             accessToken, invocationData.daysWindow
           )
 

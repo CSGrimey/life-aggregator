@@ -11,6 +11,11 @@ object TrendsServiceSpec extends SimpleIOSuite {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
   private val retrievedTerms = List("UFC", "Mickey mouse", "Frozen")
+  private val expectedTermsLinks = List(
+    "<a href=\"https://search.brave.com/search?q=UFC\">UFC</a>",
+    "<a href=\"https://search.brave.com/search?q=Mickey+mouse\">Mickey mouse</a>",
+    "<a href=\"https://search.brave.com/search?q=Frozen\">Frozen</a>"
+  )
 
   private val expectedQuery =
     """
@@ -32,8 +37,7 @@ object TrendsServiceSpec extends SimpleIOSuite {
     """
 
   private def buildTrendsServiceStub(
-                                      daysWindow: Int,
-                                      retrievedTrends: List[String]
+                                      daysWindow: Int, retrievedTrends: List[String]
                                     ): TrendsService[IO] =
     new TrendsService[IO] {
       override protected def executeQuery(
@@ -52,9 +56,9 @@ object TrendsServiceSpec extends SimpleIOSuite {
     )
 
     for {
-      trends <- trendsServiceStub.retrieveTrends(
+      trends <- trendsServiceStub.retrieveTrendsAsLinks(
         new GoogleCredentials {}, daysWindow = 1
       )
-    } yield expect(trends == retrievedTerms)
+    } yield expect(trends == expectedTermsLinks)
   }
 }

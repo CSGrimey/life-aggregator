@@ -11,7 +11,6 @@ import org.http4s.implicits.*
 import org.http4s.{AuthScheme, Credentials, Header, Headers, Method, Request, Uri}
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
-import java.text.DateFormat
 import java.time.LocalDate
 
 class TaskService[F[_] : Async] extends OutputsDate {

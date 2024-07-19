@@ -50,21 +50,23 @@ class TrendsService[F[_]: Sync] {
       .build()
       .getService
   
-  def retrieveTrends(
-                      credentials: GoogleCredentials,
-                      daysWindow: Int
-                    )(using logger: Logger[F]): F[List[String]] = {
-    val trends = for {
+  def retrieveTrendsAsLinks(credentials: GoogleCredentials, daysWindow: Int)
+                           (using logger: Logger[F]): F[List[String]] = {
+    val trendsLinks = for {
       _ <- logger.info(s"Retrieving trends from the last $daysWindow days")
 
       topTermsInEnglandQuery = buildQuery(daysWindow)
       queryConfig = QueryJobConfiguration.of(topTermsInEnglandQuery)
 
       terms <- executeQuery(credentials, queryConfig)
-      _ <- logger.info(s"Retrieved ${terms.size} trends")  
-    } yield terms
+      _ <- logger.info(s"Retrieved ${terms.size} trends")
 
-    trends.onError(error =>
+      termsAsLinks = terms.map(trend =>
+        s"<a href=\"https://search.brave.com/search?q=${trend.replace(" ", "+")}\">$trend</a>"
+      )
+    } yield termsAsLinks
+
+    trendsLinks.onError(error =>
       logger.error(s"Failed to retrieve trends. Error = $error")
     )
   }
