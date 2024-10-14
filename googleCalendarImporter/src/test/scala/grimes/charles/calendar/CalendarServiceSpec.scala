@@ -9,48 +9,43 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.SimpleIOSuite
 
-import java.time.temporal.ChronoUnit.DAYS
-import java.time.{Instant, ZoneId}
+import java.time.Instant
+import java.time.temporal.ChronoUnit.{DAYS, HOURS}
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
 object CalendarServiceSpec extends SimpleIOSuite {
-  private val now = Instant.parse("2024-06-24T20:00:00.000Z")
-  private val timeMin = GoogleDateTime(
-    Date.from(now.plus(1, DAYS).truncatedTo(DAYS))
-  )
-  private val zoneId = ZoneId.of("Europe/London")
-  
+  private val now = Instant.parse("2024-06-24T10:00:00.000+01:00")
+  private val timeMin = GoogleDateTime(Date.from(now.plus(1, DAYS).truncatedTo(DAYS)))
+
   private val retrievedEvents =
     Events().setItems(
       List(
         Event()
           .setSummary("Event 1")
-          .setStatus("Cancelled")
           .setId("1234")
-          .setStart(EventDateTime().setDateTime(GoogleDateTime(Date.from(now)))),
+          .setStart(EventDateTime().setDateTime(GoogleDateTime(Date.from(now))))
+          .setEnd(EventDateTime().setDateTime(GoogleDateTime(Date.from(now.plus(7, HOURS))))),
         Event()
           .setSummary("Event 2")
-          .setStatus("Active")
           .setId("5678")
           .setStart(EventDateTime().setDate(GoogleDateTime(Date.from(now.plus(1, DAYS))))),
         Event()
           .setSummary("Event 3")
-          .setStatus("Cancelled")
           .setId("9101112")
-          .setStart(EventDateTime().setDateTime(GoogleDateTime(Date.from(now.plus(3, DAYS))))),
+          .setStart(EventDateTime().setDateTime(GoogleDateTime(Date.from(now.plus(3, DAYS).plus(2, HOURS)))))
+          .setEnd(EventDateTime().setDateTime(GoogleDateTime(Date.from(now.plus(3, DAYS).plus(2, HOURS).plus(3, HOURS))))),
         Event()
           .setSummary("Event 4")
-          .setStatus("Active")
           .setId("13141516")
           .setStart(EventDateTime().setDate(GoogleDateTime(Date.from(now.plus(5, DAYS)))))
       ).asJava
     )
   private val expectedEventsSummary = List(
-    EventSummary("Event 1", "24/06/2024"),
-    EventSummary("Event 2", "25/06/2024"),
-    EventSummary("Event 3", "27/06/2024"),
-    EventSummary("Event 4", "29/06/2024")
+    EventSummary("Event 1", "24/06/2024", timeRange = Some("10:00-17:00")),
+    EventSummary("Event 2", "25/06/2024", timeRange = None),
+    EventSummary("Event 3", "27/06/2024", timeRange = Some("12:00-15:00")),
+    EventSummary("Event 4", "29/06/2024", timeRange = None)
   )
 
   private given logger: Logger[IO] = Slf4jLogger.getLogger

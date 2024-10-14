@@ -13,6 +13,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import grimes.charles.common.utils.OutputsDate
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoUnit.*
 import java.time.{Instant, ZoneId, ZonedDateTime}
@@ -65,19 +66,28 @@ class CalendarService[F[_]: Sync] extends OutputsDate {
       case items =>
         items
           .asScala
-          .map(event => {
-            val startDateTime = ZonedDateTime.ofInstant(
-              Instant.ofEpochMilli(
-                // All day events return a different field value (date) than regular events (dateTime)
-                Option(event.getStart.getDateTime)
-                  .getOrElse(event.getStart.getDate)
-                  .getValue
-              ), ZoneId.of(timeZone)
-            ).format(dateFormatter)
+          .map(event =>
+            // All day events return a different field value (date) than regular events (dateTime)
+            Option(event.getStart.getDate) match {
+              case Some(startDate) =>
+                EventSummary(event.getSummary, toDateString(startDate), timeRange = None)
+              case None =>
+                val startDate = toDateString(event.getStart.getDateTime)
+                val startTime = toTimeString(event.getStart.getDateTime)
+                val endTime = toTimeString(event.getEnd.getDateTime)
+                val timeRange = s"$startTime-$endTime"
 
-            EventSummary(event.getSummary, startDateTime)
-          }).toList
+                EventSummary(event.getSummary, startDate, timeRange.some)
+            }
+          ).toList
     }
+
+  private def toDateString(date: DateTime) = toFormattedString(date.getValue, dateFormatter)
+  private def toTimeString(date: DateTime) = toFormattedString(date.getValue, DateTimeFormatter.ofPattern("H:mm"))
+  private def toFormattedString(timestamp: Long, formatter: DateTimeFormatter): String =
+    ZonedDateTime
+      .ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(timeZone))
+      .format(formatter)
     
   protected def executeRequest(request: Calendar#Events#List): F[Events] =
     Sync[F].blocking(request.execute())

@@ -65,7 +65,7 @@ class Main extends RequestStreamHandler {
             invocationData.daysWindow,
             aggregationType = "Google calendar events",
             aggregationResults = events.map(event =>
-              s"${event.description} - ${event.startTime}"
+              s"${event.description} - ${event.startDate} ${event.timeRange.getOrElse("")}"
             )
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
