@@ -42,14 +42,14 @@ class Main extends RequestStreamHandler {
             apiKeyName, awsSessionToken, client
           )
 
-          incompletedTasks <- TaskService[IO].getIncompletedTasks(
+          dueTasks <- TaskService[IO].getDueTasks(
             apiKeyParam.Parameter.Value, invocationData.daysWindow, client
           )
 
           result = AggregatedData(
             invocationData.daysWindow,
-            aggregationType = "Todoist incompleted tasks",
-            aggregationResults = incompletedTasks.map(task =>
+            aggregationType = "Todoist due tasks",
+            aggregationResults = dueTasks.map(task =>
               s"${task.content} - ${task.due.date}"
             )
           )

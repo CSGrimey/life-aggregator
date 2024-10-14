@@ -58,7 +58,7 @@ class Main extends RequestStreamHandler {
           result = AggregatedData(
             invocationData.daysWindow,
             aggregationType = "Google trends",
-            aggregationResults = trends
+            aggregationResults = trends.toList
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
           _ <- IO.blocking(outputStream.write(

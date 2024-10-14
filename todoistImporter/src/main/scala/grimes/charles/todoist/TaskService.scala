@@ -17,8 +17,9 @@ class TaskService[F[_] : Async] extends OutputsDate {
   // https://developer.todoist.com/rest/v2/#get-active-tasks
   private val todoistV2Url = uri"https://api.todoist.com/rest/v2/tasks"
 
-  def getIncompletedTasks(apiKey: String, daysWindow: Int, client: Client[F])
-                         (using logger: Logger[F]): F[List[TodoistTask]] = {
+  def getDueTasks(apiKey: String, daysWindow: Int, client: Client[F])
+                 (using logger: Logger[F]): F[List[TodoistTask]] = {
+    val dayAhead = daysWindow + 1
     val request = Request[F](
       method = GET,
       uri = todoistV2Url
@@ -29,7 +30,7 @@ class TaskService[F[_] : Async] extends OutputsDate {
     )
 
     val todoistTasks = for {
-      _ <- logger.info(s"Retrieving incompleted tasks due before the next $daysWindow days")
+      _ <- logger.info(s"Retrieving due tasks before the last $daysWindow days")
       tasks <- client.expect[List[TodoistTask]](request)(jsonOf[F, List[TodoistTask]])
       formattedTasks = tasks.map { task =>
         task.copy(due = Due(LocalDate.parse(task.due.date).format(dateFormatter)))

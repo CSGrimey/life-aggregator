@@ -1,5 +1,6 @@
 package grimes.charles.trends
 
+import cats.data.NonEmptyList
 import cats.effect.IO
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.QueryJobConfiguration
@@ -11,7 +12,7 @@ object TrendsServiceSpec extends SimpleIOSuite {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
   private val retrievedTerms = List("UFC", "Mickey mouse", "Frozen")
-  private val expectedTermsLinks = List(
+  private val expectedTermsLinks = NonEmptyList.of(
     "<a href=\"https://search.brave.com/search?q=UFC\">UFC</a>",
     "<a href=\"https://search.brave.com/search?q=Mickey+mouse\">Mickey mouse</a>",
     "<a href=\"https://search.brave.com/search?q=Frozen\">Frozen</a>"
@@ -60,5 +61,17 @@ object TrendsServiceSpec extends SimpleIOSuite {
         new GoogleCredentials {}, daysWindow = 1
       )
     } yield expect(trends == expectedTermsLinks)
+  }
+
+  test("Should handle no trends") {
+    val trendsServiceStub = buildTrendsServiceStub(
+      daysWindow = 1, List()
+    )
+
+    for {
+      trends <- trendsServiceStub.retrieveTrendsAsLinks(
+        new GoogleCredentials {}, daysWindow = 1
+      )
+    } yield expect(trends == NonEmptyList.one("No trends returned by Google"))
   }
 }

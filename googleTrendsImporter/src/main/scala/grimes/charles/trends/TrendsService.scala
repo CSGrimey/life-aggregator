@@ -1,5 +1,6 @@
 package grimes.charles.trends
 
+import cats.data.NonEmptyList
 import cats.effect.Sync
 import cats.syntax.all.*
 import com.google.auth.oauth2.GoogleCredentials
@@ -51,7 +52,7 @@ class TrendsService[F[_]: Sync] {
       .getService
   
   def retrieveTrendsAsLinks(credentials: GoogleCredentials, daysWindow: Int)
-                           (using logger: Logger[F]): F[List[String]] = {
+                           (using logger: Logger[F]): F[NonEmptyList[String]] = {
     val trendsLinks = for {
       _ <- logger.info(s"Retrieving trends from the last $daysWindow days")
 
@@ -61,9 +62,11 @@ class TrendsService[F[_]: Sync] {
       terms <- executeQuery(credentials, queryConfig)
       _ <- logger.info(s"Retrieved ${terms.size} trends")
 
-      termsAsLinks = terms.map(trend =>
-        s"<a href=\"https://search.brave.com/search?q=${trend.replace(" ", "+")}\">$trend</a>"
-      )
+      termsAsLinks = NonEmptyList.fromList(
+        terms.map(trend =>
+          s"<a href=\"https://search.brave.com/search?q=${trend.replace(" ", "+")}\">$trend</a>"
+        )
+      ).getOrElse(NonEmptyList.one("No trends returned by Google"))
     } yield termsAsLinks
 
     trendsLinks.onError(error =>

@@ -48,7 +48,7 @@ object TaskServiceSpec  extends IOSuite {
       }
 
       for {
-        result <- TaskService[IO].getIncompletedTasks(
+        result <- TaskService[IO].getDueTasks(
           "theapikey", daysWindow, clientStub
         )
       } yield expect(
