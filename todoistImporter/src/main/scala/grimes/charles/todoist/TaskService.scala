@@ -22,15 +22,14 @@ class TaskService[F[_] : Async] extends OutputsDate {
     val dayAhead = daysWindow + 1
     val request = Request[F](
       method = GET,
-      uri = todoistV2Url
-        .withQueryParam("filter", s"overdue|next $daysWindow days"),
+      uri = todoistV2Url.withQueryParam("filter", s"overdue|next $daysWindow days"),
       headers = Headers(
         Authorization(Credentials.Token(AuthScheme.Bearer, apiKey))
       )
     )
 
     val todoistTasks = for {
-      _ <- logger.info(s"Retrieving due tasks before the last $daysWindow days")
+      _ <- logger.info("Retrieving due tasks")
       tasks <- client.expect[List[TodoistTask]](request)(jsonOf[F, List[TodoistTask]])
       formattedTasks = tasks.map { task =>
         task.copy(due = Due(LocalDate.parse(task.due.date).format(dateFormatter)))

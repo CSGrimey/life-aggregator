@@ -37,7 +37,7 @@ lazy val root = project
   .in(file("."))
   .settings(commonSettings)
   .disablePlugins(AssemblyPlugin)
-  .aggregate(common, emailBuilder, googleCalendarImporter, googleTrendsImporter, todoistImporter)
+  .aggregate(common, emailBuilder, googleCalendarImporter, googleTrendsImporter, todoistImporter, weatherImporter)
 
 lazy val common = project
   .in(file("common"))
@@ -118,6 +118,30 @@ lazy val todoistImporter = project
   .in(file("todoistImporter"))
   .settings(
     name := "todoistImporter",
+    commonSettings,
+    assembly / mainClass := Some("grimes.charles.Main"),
+    assembly / test := (Test / test).value,
+    assemblySettings,
+    libraryDependencies ++= Seq(
+      dependencies.http4sEmberClient,
+      dependencies.http4sDsl,
+      dependencies.http4sCirce
+    ),
+    s3Upload / mappings := Seq(
+      (
+        target.value / "scala-3.4.1" / (assembly / assemblyJarName).value,
+        s"deployment/${(assembly / assemblyJarName).value}"
+      )
+    ),
+    s3Upload / s3Host := "charles-grimes-manual-test"
+  )
+  .dependsOn(common)
+  .enablePlugins(S3Plugin)
+
+lazy val weatherImporter = project
+  .in(file("weatherImporter"))
+  .settings(
+    name := "weatherImporter",
     commonSettings,
     assembly / mainClass := Some("grimes.charles.Main"),
     assembly / test := (Test / test).value,
