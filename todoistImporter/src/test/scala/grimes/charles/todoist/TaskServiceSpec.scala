@@ -14,7 +14,7 @@ import org.typelevel.ci.CIStringSyntax
 
 import scala.io.Source
 
-object TaskServiceSpec  extends IOSuite {
+object TaskServiceSpec extends IOSuite {
   override type Res = String
 
   override def sharedResource: Resource[IO, String] = Resource.fromAutoCloseable(
