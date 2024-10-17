@@ -5,7 +5,7 @@ import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.global
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import grimes.charles.common.models.AggregatedData
-import grimes.charles.common.utils.OutputsDate
+import grimes.charles.common.utils.DateUtils
 import grimes.charles.models.EmailContent
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.time.{LocalDate, ZoneId}
 import scala.io.Source
 
-class Main extends RequestStreamHandler with OutputsDate {
+class Main extends RequestStreamHandler with DateUtils {
   private given logger: Logger[IO] = Slf4jLogger.getLogger
 
   def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit =

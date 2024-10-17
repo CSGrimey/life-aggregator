@@ -2,6 +2,7 @@ package grimes.charles.weather
 
 import cats.effect.Async
 import cats.syntax.all.*
+import grimes.charles.common.utils.DateUtils
 import org.http4s.Method.GET
 import org.http4s.Request
 import org.http4s.circe.jsonOf
@@ -9,12 +10,23 @@ import org.http4s.client.Client
 import org.http4s.implicits.uri
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
-class WeatherService[F[_] : Async] {
+import java.text.SimpleDateFormat
+import java.time.temporal.ChronoUnit
+import java.time.temporal.ChronoUnit.*
+import java.time.Instant
+import java.util.Date
+
+class WeatherService[F[_] : Async] extends DateUtils {
   // https://open-meteo.com/en/docs
   private val openMeteoUrl = uri"https://api.open-meteo.com/v1/forecast"
 
-  def getForecast(daysWindow: Int, client: Client[F])
+  private val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
+
+  def getForecast(now: Instant, daysWindow: Int, client: Client[F])
                  (using logger: Logger[F]): F[List[Weather]] = {
+    val startDate = toStartOfNextDay(now)
+    val endDate = Date.from(startDate.toInstant.plus(daysWindow - 1, DAYS))
+
     val request = Request[F](
       method = GET,
       uri = openMeteoUrl
@@ -22,9 +34,9 @@ class WeatherService[F[_] : Async] {
         .withQueryParam("longitude", -0.97813)
         .withQueryParam("hourly", "temperature_2m,weather_code")
         .withQueryParam("daily", "sunrise,sunset")
-        .withQueryParam("timezone", "Europe/London")
-        .withQueryParam("start_date", "2024-10-17")
-        .withQueryParam("end_date", "2024-10-17")
+        .withQueryParam("timezone", timeZone)
+        .withQueryParam("start_date", dateFormat.format(startDate))
+        .withQueryParam("end_date", dateFormat.format(endDate))
         .withQueryParam("models", "ukmo_seamless")
     )
 

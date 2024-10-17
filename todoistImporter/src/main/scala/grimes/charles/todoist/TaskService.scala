@@ -2,7 +2,7 @@ package grimes.charles.todoist
 
 import cats.effect.Async
 import cats.syntax.all.*
-import grimes.charles.common.utils.OutputsDate
+import grimes.charles.common.utils.DateUtils
 import org.http4s.Method.*
 import org.http4s.circe.jsonOf
 import org.http4s.client.Client
@@ -13,7 +13,7 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
 import java.time.LocalDate
 
-class TaskService[F[_] : Async] extends OutputsDate {
+class TaskService[F[_] : Async] extends DateUtils {
   // https://developer.todoist.com/rest/v2/#get-active-tasks
   private val todoistV2Url = uri"https://api.todoist.com/rest/v2/tasks"
 

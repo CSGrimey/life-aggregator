@@ -10,7 +10,7 @@ import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.model.Events
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
-import grimes.charles.common.utils.OutputsDate
+import grimes.charles.common.utils.DateUtils
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 
 import java.time.format.DateTimeFormatter
@@ -20,7 +20,7 @@ import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
-class CalendarService[F[_]: Sync] extends OutputsDate {
+class CalendarService[F[_]: Sync] extends DateUtils {
   private def buildCalendarService(credentials: GoogleCredentials, projectName: String): F[Calendar] =
     Sync[F]
       .delay(GoogleNetHttpTransport.newTrustedTransport())
@@ -34,9 +34,6 @@ class CalendarService[F[_]: Sync] extends OutputsDate {
           .setApplicationName(projectName)
           .build()
       }
-
-  private def toStartOfNextDay(now: Instant): Date =
-    Date.from(now.plus(1, DAYS).truncatedTo(DAYS))
 
   private def retrieveEvents(
                               calendarService: Calendar,

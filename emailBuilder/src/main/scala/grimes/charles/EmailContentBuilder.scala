@@ -1,12 +1,12 @@
 package grimes.charles
 
 import grimes.charles.common.models.AggregatedData
-import grimes.charles.common.utils.OutputsDate
+import grimes.charles.common.utils.DateUtils
 import grimes.charles.models.EmailContent
 
 import java.time.LocalDate
 
-object EmailContentBuilder extends OutputsDate {
+object EmailContentBuilder extends DateUtils {
   private def buildSubject(aggregatedData: List[AggregatedData], date: LocalDate): String = {
     val daysWindow = aggregatedData
       .collectFirst(_.daysWindow)
