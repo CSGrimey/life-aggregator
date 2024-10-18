@@ -9,6 +9,5 @@ trait DateUtils {
   protected val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   protected val timeZone = "Europe/London"
 
-  protected def toStartOfNextDay(now: Instant): Date =
-    Date.from(now.plus(1, DAYS).truncatedTo(DAYS))
+  protected def toStartOfNextDay(now: Instant): Date = Date.from(now.plus(1, DAYS).truncatedTo(DAYS))
 }

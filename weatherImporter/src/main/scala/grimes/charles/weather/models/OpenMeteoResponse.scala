@@ -1,4 +1,4 @@
-package grimes.charles.weather
+package grimes.charles.weather.models
 
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
@@ -13,7 +13,7 @@ object Hourly {
   given hourlyDecoder: Decoder[Hourly] = deriveDecoder[Hourly]
 }
 
-case class Weather(daily: Daily, hourly: Hourly)
-object Weather {
-  given weatherDecoder: Decoder[Weather] = deriveDecoder[Weather]
+case class OpenMeteoResponse(daily: Daily, hourly: Hourly)
+object OpenMeteoResponse {
+  given openMeteoResponseDecoder: Decoder[OpenMeteoResponse] = deriveDecoder[OpenMeteoResponse]
 }
