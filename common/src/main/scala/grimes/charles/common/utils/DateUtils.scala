@@ -1,6 +1,6 @@
 package grimes.charles.common.utils
 
-import java.time.{Instant, LocalDateTime}
+import java.time.{Instant, LocalDateTime, LocalTime}
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit.DAYS
 import java.util.Date
@@ -12,6 +12,6 @@ trait DateUtils {
 
   protected def toStartOfNextDay(now: Instant): Date = Date.from(now.plus(1, DAYS).truncatedTo(DAYS))
   
-  protected def getTimeFromDateTimeString(dateTimeString: String): Option[String] =
-    Option(LocalDateTime.parse(dateTimeString, dateTimeformatter).toLocalTime.toString)
+  protected def getTimeFromDateTimeString(dateTimeString: String): Option[LocalTime] =
+    Option(LocalDateTime.parse(dateTimeString, dateTimeformatter).toLocalTime)
 }

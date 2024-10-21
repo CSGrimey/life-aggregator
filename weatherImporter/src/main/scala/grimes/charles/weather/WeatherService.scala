@@ -25,32 +25,43 @@ class WeatherService[F[_] : Async] extends DateUtils {
   private val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
 
   private val startHour = 8 // Start daily forecast at 08:00
-
-  private val default = "Unknown"
+  private val hoursInDay = 24
 
   private def extractDailyForecast(startDate: Date, daysWindow: Int, openMeteoResponse: OpenMeteoResponse): F[NonEmptyList[DayForecast]] = {
     import openMeteoResponse._
 
-    // Todo: Needs major refactoring before deploying
-    val dailyForecast = (0 until daysWindow).map(day => {
-      val sunrise = daily.sunrise.get(day).flatMap(getTimeFromDateTimeString).getOrElse(default)
-      val sunset = daily.sunset.get(day).flatMap(getTimeFromDateTimeString).getOrElse(default)
+    def extractHourlyForecast(day: Int): F[NonEmptyList[HourForecast]] =
+      (startHour until 24)
+        .toList
+        .traverse(hour => {
+          val index = (day * hoursInDay) + hour
 
-      val hourlyForecast = (startHour until 24).map(hour => {
-        val index = (day * 24) + hour
+          for {
+            temperature: String <- Async[F].fromOption(
+              hourly.temperature_2m.get(index).map(t => s"${Math.round(t)}°C"),
+              RuntimeException(s"Failed to extract temperature for index $index")
+            )
+            weather: String <- Async[F].fromOption(
+              hourly.weather_code.get(index).flatMap(WmoCodes.mapping.get),
+              RuntimeException(s"Failed to extract weather code for index $index")
+            )
+          } yield HourForecast(temperature, time = LocalTime.of(hour, 0), weather)
+        }).flatMap(hf =>
+          Async[F].fromOption(NonEmptyList.fromList(hf), RuntimeException(s"Failed to extract hourly forecast for day $day"))
+        )
 
-        val temperature = hourly.temperature_2m.get(index).map(t => s"${Math.round(t)}°C").getOrElse(default)
-        val weather = hourly.weather_code.get(index).flatMap(WmoCodes.mapping.get).getOrElse(default)
-        val time = LocalTime.of(hour, 0)
+    val dailyForecast = (0 until daysWindow)
+      .toList
+      .traverse(day =>
+        for {
+          sunrise <- Async[F].fromOption(daily.sunrise.get(day).flatMap(getTimeFromDateTimeString), RuntimeException(s"Failed to extract sunrise for day $day"))
+          sunset <- Async[F].fromOption(daily.sunset.get(day).flatMap(getTimeFromDateTimeString), RuntimeException(s"Failed to extract sunset for day $day"))
 
-        HourForecast(temperature, time, weather)
-      }).toList
+          hourlyForecast <- extractHourlyForecast(day)
+        } yield DayForecast(Date.from(startDate.toInstant.plus(day, DAYS)), sunrise, sunset, hourlyForecast)
+      )
 
-      // Todo: Make this safe
-      DayForecast(Date.from(startDate.toInstant.plus(day, DAYS)), sunrise, sunset, hourlyForecast = NonEmptyList.fromListUnsafe(hourlyForecast))
-    }).toList
-
-    Async[F].fromOption(NonEmptyList.fromList(dailyForecast), RuntimeException("Failed to extract daily forecast"))
+    dailyForecast.flatMap(df => Async[F].fromOption(NonEmptyList.fromList(df), RuntimeException("Failed to extract daily forecast")))
   }
 
   def getForecast(now: Instant, daysWindow: Int, client: Client[F])

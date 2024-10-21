@@ -58,8 +58,8 @@ object WeatherServiceSpec extends IOSuite {
       expectedForecast = NonEmptyList.one(
         DayForecast(
           Date.from(Instant.parse("2024-06-25T01:00:00.000+01:00")),
-          sunrise = "07:29",
-          sunset = "18:02",
+          sunrise = LocalTime.of(7, 29),
+          sunset = LocalTime.of(18, 2),
           hourlyForecast = NonEmptyList.of(
             HourForecast("15°C", LocalTime.of(8, 0), "Overcast"),
             HourForecast("15°C", LocalTime.of(9, 0), "Overcast"),
@@ -92,8 +92,8 @@ object WeatherServiceSpec extends IOSuite {
       expectedForecast = NonEmptyList.of(
         DayForecast(
           Date.from(Instant.parse("2024-06-25T01:00:00.000+01:00")),
-          sunrise = "07:29",
-          sunset = "18:02",
+          sunrise = LocalTime.of(7, 29),
+          sunset = LocalTime.of(18, 2),
           hourlyForecast = NonEmptyList.of(
             HourForecast("15°C", LocalTime.of(8, 0), "Overcast"),
             HourForecast("15°C", LocalTime.of(9, 0), "Overcast"),
@@ -115,8 +115,8 @@ object WeatherServiceSpec extends IOSuite {
         ),
         DayForecast(
           Date.from(Instant.parse("2024-06-26T01:00:00.000+01:00")),
-          sunrise = "07:30",
-          sunset = "18:00",
+          sunrise = LocalTime.of(7, 30),
+          sunset = LocalTime.of(18, 0),
           hourlyForecast = NonEmptyList.of(
             HourForecast("11°C", LocalTime.of(8, 0), "Overcast"),
             HourForecast("11°C", LocalTime.of(9, 0), "Overcast"),
