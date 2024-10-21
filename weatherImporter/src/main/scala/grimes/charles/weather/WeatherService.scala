@@ -15,7 +15,7 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import java.text.SimpleDateFormat
 import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoUnit.*
-import java.time.Instant
+import java.time.*
 import java.util.Date
 
 class WeatherService[F[_] : Async] extends DateUtils {
@@ -24,8 +24,7 @@ class WeatherService[F[_] : Async] extends DateUtils {
 
   private val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
 
-  private val startHour = 9 // Start daily forecast at 08:00
-  private val dayForecastWindow = 24 - startHour  // Only grab remaining hours of data for the day from 08:00
+  private val startHour = 8 // Start daily forecast at 08:00
 
   private val default = "Unknown"
 
@@ -34,16 +33,17 @@ class WeatherService[F[_] : Async] extends DateUtils {
 
     // Todo: Needs major refactoring before deploying
     val dailyForecast = (0 until daysWindow).map(day => {
-      val sunrise = daily.sunrise.get(daysWindow).getOrElse(default)
-      val sunset = daily.sunset.get(daysWindow).getOrElse(default)
+      val sunrise = daily.sunrise.get(day).flatMap(getTimeFromDateTimeString).getOrElse(default)
+      val sunset = daily.sunset.get(day).flatMap(getTimeFromDateTimeString).getOrElse(default)
 
-      val hourlyForecast = (0 until dayForecastWindow).map(hour => {
-        val hourIndex = (startHour * daysWindow) + hour
+      val hourlyForecast = (startHour until 24).map(hour => {
+        val index = (day * 24) + hour
 
-        val temperature = hourly.temperature_2m.get(hourIndex).map(t => s"$t°C").getOrElse(default)
-        val weather = hourly.weather_code.get(hourIndex).flatMap(WmoCodes.mapping.get).getOrElse(default)
+        val temperature = hourly.temperature_2m.get(index).map(t => s"${Math.round(t)}°C").getOrElse(default)
+        val weather = hourly.weather_code.get(index).flatMap(WmoCodes.mapping.get).getOrElse(default)
+        val time = LocalTime.of(hour, 0)
 
-        HourForecast(temperature, hour, weather)
+        HourForecast(temperature, time, weather)
       }).toList
 
       // Todo: Make this safe
