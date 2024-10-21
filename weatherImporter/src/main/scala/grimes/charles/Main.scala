@@ -1,9 +1,11 @@
 package grimes.charles
 
 import cats.effect.IO
+import cats.effect.kernel.Clock
 import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import grimes.charles.common.models.{AggregatedData, InvocationData}
+import grimes.charles.weather.WeatherService
 import org.typelevel.log4cats.SelfAwareStructuredLogger as Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -30,12 +32,25 @@ class Main extends RequestStreamHandler {
           invocationData <- IO.fromEither(decode[InvocationData](input))
           _ <- IO.raiseWhen(invocationData.daysWindow <= 0)
                            (RuntimeException("daysWindow must be positive"))
-          
+
+          now <- Clock[IO].realTimeInstant
+          dailyForecast <- WeatherService[IO].getForecast(now, invocationData.daysWindow, client)
 
           result = AggregatedData(
             invocationData.daysWindow,
             aggregationType = "Weather forecast in Reading",
-            aggregationResults = List("TODO")
+            aggregationResults = dailyForecast
+              .toList
+              .map(dayForecast => {
+                import dayForecast._
+                
+                s"""
+                ${date.toString}
+                Sunrise = $sunrise | Sunset = $sunset
+                ${hourlyForecast.toList.map(hf => {import hf._; s"$time $temperature $weather"}).mkString("\\n")}
+                
+                """
+              })
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
           _ <- IO.blocking(outputStream.write(resultJson.toString.getBytes(UTF_8.name)))

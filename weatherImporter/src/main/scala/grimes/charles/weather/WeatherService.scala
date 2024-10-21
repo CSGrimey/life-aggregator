@@ -31,7 +31,7 @@ class WeatherService[F[_] : Async] extends DateUtils {
     import openMeteoResponse._
 
     def extractHourlyForecast(day: Int): F[NonEmptyList[HourForecast]] =
-      (startHour until 24)
+      (startHour until hoursInDay)
         .toList
         .traverse(hour => {
           val index = (day * hoursInDay) + hour
