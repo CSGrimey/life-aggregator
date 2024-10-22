@@ -1,8 +1,8 @@
 # life-aggregator
-A daily/weekly aggregator of useful information from Google calendar and Todoist, while also showing the most searched for terms in England that day/week.
+A daily/weekly aggregator of useful information from Google calendar and Todoist, while also showing the most searched for terms in England that day/week and the weather forecast for the next day/week.
 
 Below is a screenshot of the step function (stood up by my private terraform repo) that uses the code in this repo.
-![Screenshot_20240702_145837](https://github.com/CSGrimey/life-aggregator/assets/2895932/8607e483-b429-4cdb-a299-c13533afeb45)
+![Screenshot_20241022_144010](https://github.com/user-attachments/assets/4938e251-3f99-4822-8b23-9e2229b7c167)
 
 
 Every day this workflow is invoked by an events bridge scheduler trigger, which ends with an email sent via AWS SES including a summary of relevant Google calendar events, incomplete Todoist tasks and the top ten most searched for terms in England.
