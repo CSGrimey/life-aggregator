@@ -37,11 +37,11 @@ class WeatherService[F[_] : Async] extends DateUtils {
           val index = (day * hoursInDay) + hour
 
           for {
-            temperature: String <- Async[F].fromOption(
+            temperature <- Async[F].fromOption(
               hourly.temperature_2m.get(index).map(t => s"${Math.round(t)}°C"),
               RuntimeException(s"Failed to extract temperature for index $index")
             )
-            weather: String <- Async[F].fromOption(
+            weather <- Async[F].fromOption(
               hourly.weather_code.get(index).flatMap(WmoCodes.mapping.get),
               RuntimeException(s"Failed to extract weather code for index $index")
             )

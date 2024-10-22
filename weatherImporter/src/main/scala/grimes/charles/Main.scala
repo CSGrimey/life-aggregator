@@ -41,16 +41,7 @@ class Main extends RequestStreamHandler {
             aggregationType = "Weather forecast in Reading",
             aggregationResults = dailyForecast
               .toList
-              .map(dayForecast => {
-                import dayForecast._
-                
-                s"""
-                ${date.toString}
-                Sunrise = $sunrise | Sunset = $sunset
-                ${hourlyForecast.toList.map(hf => {import hf._; s"$time $temperature $weather"}).mkString("\\n")}
-                
-                """
-              })
+              .map(_.toString)
           )
           resultJson <- IO(AggregatedData.encoder.apply(result))
           _ <- IO.blocking(outputStream.write(resultJson.toString.getBytes(UTF_8.name)))
