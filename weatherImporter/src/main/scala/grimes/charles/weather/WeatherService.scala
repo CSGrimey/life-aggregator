@@ -66,10 +66,12 @@ class WeatherService[F[_] : Async] extends DateUtils {
 
   def getForecast(now: Instant, daysWindow: Int, client: Client[F])
                  (using logger: Logger[F]): F[NonEmptyList[DayForecast]] = {
+    val validDaysWindow = Math.min(daysWindow, 6) // Open Meteo doesn't support more without returning nulls
     val forecast = for {
-      _ <- logger.info(s"Retrieving weather forecast in Reading for the next $daysWindow days")
+      _ <- logger.info(s"Retrieving weather forecast in Reading for the next $validDaysWindow days")
       startDate = toStartOfNextDay(now)
-      endDate = Date.from(startDate.toInstant.plus(daysWindow - 1, DAYS))
+      // We start from the next day, so we have to off by one here.
+      endDate = Date.from(startDate.toInstant.plus(validDaysWindow - 1, DAYS))
       request = Request[F](
         method = GET,
         uri = openMeteoUrl
@@ -85,7 +87,7 @@ class WeatherService[F[_] : Async] extends DateUtils {
       openMeteoResponse <- client.expect[OpenMeteoResponse](request)(jsonOf[F, OpenMeteoResponse])
 
       _ <- logger.info("Converting weather api response into an email friendly output")
-      dailyForecast <- extractDailyForecast(startDate, daysWindow, openMeteoResponse)
+      dailyForecast <- extractDailyForecast(startDate, validDaysWindow, openMeteoResponse)
     } yield dailyForecast
 
     forecast.onError(error =>
